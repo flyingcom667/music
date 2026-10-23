@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Audiofy</string>
+    <string name="external_audio_title">التشغيل من الملفات</string>
+    <string name="external_audio_open_in_app">فتح في التطبيق</string>
+    <string name="home_storage_permission">السماح بالوصول إلى الموسيقى</string>
+    <string name="action_stop_playback">إيقاف التشغيل</string>
+    <string name="library_selection_count">تم تحديد %1$d</string>
+    <string name="library_select_all">تحديد كل المقاطع الظاهرة</string>
+    <string name="library_deselect_all">إلغاء تحديد المقاطع الظاهرة</string>
+    <string name="library_delete_selected">حذف ملفات الصوت المحددة</string>
+    <string name="library_delete_selected_title">حذف المقاطع المحددة؟</string>
+    <string name="library_delete_selected_body">سيُحذف %1$d ملف صوتي نهائيًا من هذا الجهاز. لا يمكن التراجع عن ذلك.</string>
+    <string name="library_remove_selected">إزالة المحدد من المكتبة</string>
+    <string name="library_share_selected">مشاركة المحدد</string>
+    <string name="library_select_songs">تحديد المقاطع</string>
+    <string name="library_songs_removed">تمت إزالة %1$d من المكتبة</string>
+    <string name="library_remove_failed">تعذرت إزالة المقاطع المحددة</string>
+    <string name="delete_selected_done">تم حذف %1$d ملف صوتي</string>
+    <string name="delete_selected_partial">تم حذف %1$d ملف. تعذّر حذف بعض الملفات المحددة.</string>
+    <string name="audio_device_disconnected_title">انقطع جهاز الصوت</string>
+    <string name="audio_device_disconnected_body">انقطع جهاز الصوت. تحقق من مخرج الصوت قبل استئناف التشغيل.</string>
+    <string name="external_audio_unavailable">تعذّر فتح هذا الملف الصوتي.</string>
+    <string name="player_mute">كتم الصوت</string>
+    <string name="player_unmute">إلغاء كتم الصوت</string>
+    <string name="player_volume">مستوى صوت التشغيل</string>
+    <string name="player_volume_above_safe_level">مستوى الصوت أعلى من المستوى الآمن الموصى به</string>
+    <string name="player_rewind_20_seconds">إرجاع ٢٠ ثانية</string>
+    <string name="player_forward_20_seconds">تقديم ٢٠ ثانية</string>
+    <string name="home_favorite_songs">المقاطع المفضلة</string>
+    <string name="player_speed_value">سرعة %1$s</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">الرئيسية</string>
+    <string name="nav_library">المكتبة</string>
+    <string name="nav_playlists">قوائم التشغيل</string>
+
+    <!-- Common -->
+    <string name="action_search">بحث</string>
+    <string name="action_settings">الإعدادات</string>
+    <string name="action_back">رجوع</string>
+    <string name="action_close">إغلاق</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_save">حفظ</string>
+    <string name="action_create">إنشاء</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_rename">إعادة تسمية</string>
+    <string name="action_confirm">تأكيد</string>
+    <string name="action_retry">إعادة المحاولة</string>
+    <string name="action_clear">مسح</string>
+    <string name="action_dismiss">تجاهل</string>
+    <string name="action_more_options">خيارات إضافية</string>
+    <string name="action_play">تشغيل</string>
+    <string name="action_pause">إيقاف مؤقت</string>
+    <string name="action_next">المقطع التالي</string>
+    <string name="action_previous">المقطع السابق</string>
+    <string name="action_shuffle">تشغيل عشوائي</string>
+    <string name="action_repeat">تكرار</string>
+    <string name="action_repeat_off">بدون تكرار</string>
+    <string name="action_repeat_all">تكرار الكل</string>
+    <string name="action_repeat_one">تكرار المقطع</string>
+    <string name="action_favorite">إضافة إلى المفضلة</string>
+    <string name="action_unfavorite">إزالة من المفضلة</string>
+    <string name="action_queue">قائمة التشغيل</string>
+    <string name="action_volume">مستوى الصوت</string>
+    <string name="action_sleep_timer">مؤقت النوم</string>
+    <string name="action_playback_speed">سرعة التشغيل</string>
+    <string name="action_audio_output">مخرج الصوت</string>
+    <string name="action_song_info">معلومات المقطع</string>
+    <string name="action_add_to_playlist">إضافة إلى قائمة تشغيل</string>
+    <string name="action_share">مشاركة</string>
+    <string name="action_edit_metadata">تعديل البيانات الوصفية</string>
+    <string name="action_refresh">تحديث</string>
+    <string name="action_play_now">تشغيل الآن</string>
+    <string name="action_play_next">تشغيل التالي</string>
+    <string name="action_add_to_queue">إضافة إلى قائمة الانتظار</string>
+    <string name="action_remove_from_playlist">إزالة من قائمة التشغيل</string>
+    <string name="action_hide_from_library">إخفاء من المكتبة</string>
+    <string name="action_delete_file">حذف الملف</string>
+    <string name="action_details">التفاصيل</string>
+    <string name="action_sort">ترتيب</string>
+    <string name="action_sleep_timer_end">إنهاء مؤقت النوم</string>
+    <string name="action_open_app_settings">فتح إعدادات التطبيق</string>
+    <string name="action_grant">منح</string>
+
+    <!-- Home -->
+    <string name="home_greeting">استماع ممتع</string>
+    <string name="home_your_music">موسيقاك</string>
+    <string name="home_library_summary">%1$d مقطعًا · %2$d ألبومًا في مكتبتك</string>
+    <string name="home_library_summary_unknown">جارٍ فحص المكتبة…</string>
+    <string name="home_recently_played">شُغّل مؤخرًا</string>
+    <string name="home_recently_played_empty_title">لم يُشغَّل شيء بعد</string>
+    <string name="home_recently_played_empty_body">ستظهر هنا المقاطع التي تستمع إليها لتكمل من حيث توقفت.</string>
+    <string name="home_quick_actions">إجراءات سريعة</string>
+    <string name="home_resume">متابعة</string>
+    <string name="home_resume_subtitle">متابعة «%1$s»</string>
+    <string name="home_resume_subtitle_fallback">تابع من حيث توقفت</string>
+    <string name="home_resume_none">لا يوجد ما يُستأنف</string>
+    <string name="home_resume_none_subtitle">شغّل مقطعًا لتتابعه هنا</string>
+    <string name="home_open_player">فتح المشغّل</string>
+    <string name="home_open_player_subtitle">الانتقال إلى المشغّل الكامل</string>
+    <string name="home_shuffle_library">تشغيل المكتبة عشوائيًا</string>
+    <string name="home_shuffle_library_subtitle">تشغيل كل المقاطع بترتيب عشوائي</string>
+    <string name="home_see_all">عرض الكل</string>
+
+    <!-- Library -->
+    <string name="library_title">المكتبة</string>
+    <string name="library_tab_all_songs">كل المقاطع</string>
+    <string name="library_tab_recently_added">المضافة مؤخرًا</string>
+    <string name="library_scanning">جارٍ فحص مكتبة الموسيقى…</string>
+    <string name="library_scanning_progress">تحميل المقاطع: %1$d من %2$d</string>
+    <string name="library_loading_unknown">جارٍ تحميل المقاطع…</string>
+    <string name="library_empty_title">لم يُعثر على موسيقى</string>
+    <string name="library_empty_body">لم نعثر على أي ملف صوتي على هذا الجهاز. أضف بعض الموسيقى ثم حدّث المكتبة.</string>
+    <string name="library_error_title">تعذّر تحميل الموسيقى</string>
+    <string name="library_error_body">حدث خطأ أثناء قراءة مكتبة الوسائط.</string>
+    <string name="library_search_empty_title">لا نتائج</string>
+    <string name="library_search_empty_body">لا شيء يطابق «%1$s». جرّب عنوانًا أو فنانًا أو ألبومًا آخر.</string>
+    <string name="library_search_hint">ابحث عن مقاطع أو فنانين أو ألبومات</string>
+    <string name="library_clear_search">مسح البحث</string>
+    <string name="library_sort_title">ترتيب حسب</string>
+    <string name="library_sort_title_label">العنوان</string>
+    <string name="library_sort_artist_label">الفنان</string>
+    <string name="library_sort_album_label">الألبوم</string>
+    <string name="library_sort_duration_label">المدة</string>
+    <string name="library_sort_date_added_label">تاريخ الإضافة</string>
+    <string name="library_sort_ascending">تصاعدي</string>
+    <string name="library_sort_descending">تنازلي</string>
+    <string name="library_song_count">%1$d مقطعًا</string>
+    <string name="library_favorites_title">المفضلة</string>
+    <string name="library_refresh">تحديث المكتبة</string>
+    <string name="library_refreshing">جارٍ التحديث…</string>
+
+    <!-- Playlists -->
+    <string name="playlists_title">قوائم التشغيل</string>
+    <string name="playlists_create">إنشاء قائمة تشغيل</string>
+    <string name="playlists_empty_title">لا توجد قوائم تشغيل</string>
+    <string name="playlists_empty_body">أنشئ قائمة تشغيل لتجميع المقاطع معًا، ثم رتّبها كما تشاء.</string>
+    <string name="playlist_create_title">قائمة تشغيل جديدة</string>
+    <string name="playlist_edit_title">تعديل قائمة التشغيل</string>
+    <string name="playlist_name_label">الاسم</string>
+    <string name="playlist_description_label">الوصف (اختياري)</string>
+    <string name="playlist_name_required">أدخل اسمًا</string>
+    <string name="playlist_name_duplicate">توجد قائمة تشغيل بهذا الاسم بالفعل</string>
+    <string name="playlist_delete_title">حذف «%1$s»؟</string>
+    <string name="playlist_delete_body">ستُحذف قائمة التشغيل وترتيب المقاطع فيها. تبقى ملفات الصوت على جهازك.</string>
+    <string name="playlist_track_count">%1$d مقطعًا</string>
+    <string name="playlist_duration">الإجمالي %1$s</string>
+    <string name="playlist_add_songs">إضافة مقاطع</string>
+    <string name="playlist_empty_title">قائمة التشغيل هذه فارغة</string>
+    <string name="playlist_empty_body">أضف مقاطع من مكتبتك للبدء.</string>
+    <string name="playlist_created">تم إنشاء قائمة التشغيل</string>
+    <string name="playlist_deleted">تم حذف قائمة التشغيل</string>
+    <string name="playlist_renamed">تمت إعادة تسمية قائمة التشغيل</string>
+    <string name="playlist_song_added">أُضيف إلى قائمة التشغيل</string>
+    <string name="playlist_song_removed">أُزيل من قائمة التشغيل</string>
+    <string name="playlist_songs_added">أُضيف %1$d مقطعًا</string>
+    <string name="playlist_songs_already_present">موجود في قائمة التشغيل هذه بالفعل</string>
+    <string name="playlist_move_up">تحريك لأعلى</string>
+    <string name="playlist_move_down">تحريك لأسفل</string>
+    <string name="playlist_reorder_hint">اضغط مطولًا واسحب لإعادة الترتيب</string>
+    <string name="playlist_artwork_fallback">صورة قائمة التشغيل</string>
+
+    <!-- Player -->
+    <string name="player_now_playing">قيد التشغيل</string>
+    <string name="player_minimize">تصغير المشغّل</string>
+    <string name="player_artwork_description">صورة ألبوم %1$s</string>
+    <string name="player_unknown_artist">فنان غير معروف</string>
+    <string name="player_unknown_album">ألبوم غير معروف</string>
+    <string name="player_unknown_duration">--:--</string>
+    <string name="player_seek_bar">موضع التشغيل</string>
+    <string name="player_position">الموضع %1$s من %2$s</string>
+    <string name="player_speed_label">السرعة %1$s×</string>
+
+    <!-- Queue -->
+    <string name="queue_title">قائمة الانتظار</string>
+    <string name="queue_now_playing">قيد التشغيل</string>
+    <string name="queue_up_next">التالي</string>
+    <string name="queue_clear">مسح قائمة الانتظار</string>
+    <string name="queue_clear_title">مسح قائمة الانتظار؟</string>
+    <string name="queue_clear_body">ستُحذف المقاطع القادمة. يستمر المقطع قيد التشغيل في التشغيل.</string>
+    <string name="queue_remove">إزالة من قائمة الانتظار</string>
+    <string name="queue_empty_title">لا شيء في الانتظار</string>
+    <string name="queue_empty_body">شغّل شيئًا من مكتبتك وستظهر قائمة الانتظار هنا.</string>
+    <string name="queue_move_up">تحريك لأعلى</string>
+    <string name="queue_move_down">تحريك لأسفل</string>
+    <string name="queue_item_playing">قيد التشغيل</string>
+
+    <!-- Sleep timer -->
+    <string name="sleep_timer_title">مؤقت النوم</string>
+    <string name="sleep_timer_minutes">%1$d دقيقة</string>
+    <string name="sleep_timer_off">إيقاف</string>
+    <string name="sleep_timer_active">ينتهي مؤقت النوم خلال %1$s</string>
+    <string name="sleep_timer_set">تم ضبط المؤقت على %1$d دقيقة</string>
+
+    <!-- Settings -->
+    <string name="settings_title">الإعدادات</string>
+    <string name="settings_appearance">المظهر</string>
+    <string name="settings_theme">السمة</string>
+    <string name="settings_theme_system">الإعداد الافتراضي للنظام</string>
+    <string name="settings_theme_light">فاتح</string>
+    <string name="settings_theme_dark">داكن</string>
+    <string name="settings_dynamic_color">ألوان ديناميكية</string>
+    <string name="settings_dynamic_color_summary">استخدام ألوان خلفية الجهاز (أندرويد 12 فما فوق)</string>
+    <string name="settings_dynamic_color_unavailable">يتطلب أندرويد 12 أو أحدث</string>
+    <string name="settings_artwork_animation">حركة صورة الألبوم</string>
+    <string name="settings_artwork_animation_summary">حركة خفيفة على صورة المقطع قيد التشغيل</string>
+    <string name="settings_density">كثافة قائمة المقاطع</string>
+    <string name="settings_density_comfortable">مريحة</string>
+    <string name="settings_density_compact">مضغوطة</string>
+
+    <string name="settings_playback">التشغيل</string>
+    <string name="settings_resume_playback">استئناف التشغيل عند الفتح</string>
+    <string name="settings_resume_playback_summary">استعادة آخر مقطع وموضعه عند فتح التطبيق</string>
+    <string name="settings_shuffle_new">تشغيل عشوائي في الجلسات الجديدة</string>
+    <string name="settings_shuffle_new_summary">ابدأ كل قائمة انتظار جديدة بترتيب عشوائي</string>
+    <string name="settings_default_repeat">وضع التكرار الافتراضي</string>
+    <string name="settings_playback_speed">سرعة التشغيل الافتراضية</string>
+    <string name="settings_gapless">تشغيل بلا فجوات</string>
+    <string name="settings_gapless_summary">ربط المقاطع بلا صمت متى سمح الصيغة بذلك</string>
+    <string name="settings_crossfade">تلاشٍ متقاطع</string>
+    <string name="settings_crossfade_summary">غير مدعوم بمحرّك التشغيل الحالي</string>
+
+    <string name="settings_library">المكتبة</string>
+    <string name="settings_rescan">إعادة فحص مكتبة الموسيقى</string>
+    <string name="settings_rescan_summary">البحث عن ملفات صوتية جديدة أو معدّلة</string>
+    <string name="settings_include_non_music">إظهار الصوت غير الموسيقي</string>
+    <string name="settings_include_non_music_summary">يشمل النغمات والإشعارات والبودكاست</string>
+    <string name="settings_show_artwork">إظهار صور الألبومات</string>
+    <string name="settings_show_artwork_summary">أوقفه لتسريع التمرير في المكتبات الكبيرة</string>
+    <string name="settings_default_sort">ترتيب الفرز الافتراضي</string>
+    <string name="settings_hidden_tracks">المقاطع المخفية</string>
+    <string name="settings_hidden_tracks_summary">%1$d مقطعًا مخفيًا من المكتبة</string>
+
+    <string name="settings_audio">الصوت</string>
+    <string name="settings_volume">مستوى الصوت</string>
+    <string name="settings_volume_summary">اضبط مستوى صوت الوسائط</string>
+    <string name="settings_system_volume">فتح مستوى صوت النظام</string>
+    <string name="settings_system_volume_summary">اضبط مستوى الصوت من لوحة النظام</string>
+    <string name="settings_audio_output">مخرج الصوت</string>
+    <string name="settings_audio_output_summary">التبديل بين السماعات والسلكي وأجهزة البلوتوث</string>
+    <string name="settings_equalizer">معادل الصوت</string>
+    <string name="settings_equalizer_summary">يتطلب محرّك المؤثرات الصوتية في النظام</string>
+    <string name="settings_equalizer_unavailable">لا يتوفر معادل صوت في النظام على هذا الجهاز</string>
+
+    <string name="settings_storage">التخزين والأذونات</string>
+    <string name="settings_permission_title">الوصول إلى الموسيقى</string>
+    <string name="settings_permission_granted">ممنوح — مكتبتك متاحة.</string>
+    <string name="settings_permission_denied">مرفوض — لا يستطيع التطبيق قراءة الملفات الصوتية.</string>
+    <string name="settings_permission_body">يحتاج Audiofy إذنًا لقراءة الملفات الصوتية ليعرض موسيقى جهازك ويشغلها. لا يتم رفع أي شيء أو إرساله.</string>
+    <string name="settings_permission_open_settings">فتح إعدادات التطبيق</string>
+    <string name="settings_storage_info">%1$d مقطعًا · %2$s من الصوت</string>
+    <string name="settings_storage_info_unknown">%1$d مقطعًا</string>
+
+    <string name="settings_about">حول التطبيق</string>
+    <string name="settings_version">الإصدار %1$s</string>
+    <string name="settings_version_value">%1$s (%2$d)</string>
+    <string name="settings_privacy_title">الخصوصية</string>
+    <string name="settings_privacy_body">يعمل Audiofy دون اتصال بالكامل. لا يرفع موسيقاك أو يحللها أو يشاركها أبدًا. تُخزَّن قوائم التشغيل والمفضلة والسجل على هذا الجهاز فقط.</string>
+    <string name="settings_licenses">تراخيص المصادر المفتوحة</string>
+    <string name="settings_licenses_summary">تراخيص المكتبات التي بُني عليها هذا التطبيق</string>
+    <string name="settings_feedback">إرسال ملاحظات</string>
+    <string name="settings_feedback_summary">فتح بريد إلكتروني للإبلاغ عن مشكلة أو اقتراح ميزة</string>
+    <string name="settings_feedback_unavailable">لم يُضبط عنوان لتلقي الملاحظات</string>
+
+    <!-- Permissions -->
+    <string name="permission_required_title">اسمح بالوصول إلى الموسيقى</string>
+    <string name="permission_required_body">يحتاج Audiofy الوصول إلى ملفاتك الصوتية لعرضها في المكتبة وتشغيلها دون اتصال. الإذن للقراءة فقط ولا تغادر ملفاتك الجهاز أبدًا.</string>
+    <string name="permission_denied_body">رُفض الوصول إلى الموسيقى. فعّله في إعدادات النظام لاستخدام المكتبة.</string>
+    <string name="permission_denied_permanently">رُفض الوصول إلى الموسيقى نهائيًا. افتح إعدادات التطبيق لمنحه الإذن.</string>
+    <string name="permission_notification_title">السماح بالإشعارات</string>
+    <string name="permission_notification_body">تتيح الإشعارات التحكم في التشغيل من شاشة القفل وشريط الإشعارات. يعمل التطبيق بدونها لكن بلا أدوات تحكم.</string>
+
+    <!-- Song details / metadata -->
+    <string name="details_title">معلومات المقطع</string>
+    <string name="details_title_field">العنوان</string>
+    <string name="details_artist_field">الفنان</string>
+    <string name="details_album_field">الألبوم</string>
+    <string name="details_genre_field">النوع</string>
+    <string name="details_year_field">السنة</string>
+    <string name="details_track_field">رقم المقطع</string>
+    <string name="details_duration_field">المدة</string>
+    <string name="details_size_field">الحجم</string>
+    <string name="details_path_field">الملف</string>
+    <string name="details_added_field">تاريخ الإضافة</string>
+    <string name="details_unknown">غير معروف</string>
+
+    <string name="metadata_edit_title">تعديل البيانات الوصفية</string>
+    <string name="metadata_edit_intro">تُكتب التغييرات في الملف عبر موفّر الوسائط في النظام.</string>
+    <string name="metadata_edit_saved">تم تحديث البيانات الوصفية</string>
+    <string name="metadata_edit_failed">تعذّر تحديث الملف. رفض موفّر الوسائط التغيير.</string>
+    <string name="metadata_edit_permission_title">السماح بتعديل هذا الملف</string>
+    <string name="metadata_edit_permission_body">يحتاج أندرويد موافقتك قبل أن يسمح تطبيق آخر بالكتابة في هذا الملف الصوتي.</string>
+    <string name="metadata_edit_unsupported">تعديل البيانات الوصفية غير مدعوم في إصدار أندرويد هذا.</string>
+    <string name="metadata_edit_no_changes">لا توجد تغييرات للحفظ</string>
+
+    <!-- Delete -->
+    <string name="delete_file_title">حذف «%1$s»؟</string>
+    <string name="delete_file_body">سيُحذف الملف الصوتي نهائيًا من هذا الجهاز. لا يمكن التراجع عن ذلك.</string>
+    <string name="delete_file_request_title">السماح بالحذف</string>
+    <string name="delete_file_request_body">يحتاج أندرويد موافقتك قبل أن يحذف التطبيق هذا الملف الصوتي.</string>
+    <string name="delete_file_done">تم حذف الملف</string>
+    <string name="delete_file_failed">تعذّر حذف الملف</string>
+
+    <string name="hide_track_title">إخفاء «%1$s»؟</string>
+    <string name="hide_track_body">سيُزال من مكتبة هذا التطبيق. يبقى الملف الصوتي على جهازك.</string>
+    <string name="hide_track_done">أُخفي من المكتبة</string>
+    <string name="unhide_track_done">أُعيد إلى المكتبة</string>
+
+    <string name="share_chooser_title">مشاركة المقطع</string>
+    <string name="share_failed">تعذّرت مشاركة الملف الصوتي المحدد.</string>
+
+    <!-- Playback notification -->
+    <string name="playback_channel_name">التشغيل</string>
+    <string name="playback_channel_description">أدوات التحكم في المقطع قيد التشغيل</string>
+    <string name="playback_error_title">خطأ في التشغيل</string>
+    <string name="playback_error_generic">تعذّر تشغيل هذا المقطع</string>
+    <string name="playback_error_source_unavailable">لم يعد الملف الصوتي متاحًا</string>
+    <string name="playback_error_source_io">تعذّرت قراءة الملف الصوتي</string>
+    <string name="playback_error_decode">هذه الصيغة الصوتية غير مدعومة</string>
+</resources>

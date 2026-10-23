@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Window colours used before the first Compose frame. They match the light theme
+      background (#EDF2FB) so launching the app never flashes a different colour.
+    -->
+    <color name="launcher_background">#FFEDF2FB</color>
+    <color name="brand_periwinkle">#FFABC4FF</color>
+    <color name="brand_navy">#FF17294B</color>
+</resources>

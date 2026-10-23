@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Audiofy</string>
+    <string name="external_audio_title">پخش از فایل‌ها</string>
+    <string name="external_audio_open_in_app">باز کردن در برنامه</string>
+    <string name="home_storage_permission">اجازهٔ دسترسی به موسیقی</string>
+    <string name="action_stop_playback">توقف پخش</string>
+    <string name="library_selection_count">%1$d مورد انتخاب شد</string>
+    <string name="library_select_all">انتخاب همهٔ آهنگ‌های قابل‌مشاهده</string>
+    <string name="library_deselect_all">لغو انتخاب آهنگ‌های قابل‌مشاهده</string>
+    <string name="library_delete_selected">حذف فایل‌های صوتی انتخاب‌شده</string>
+    <string name="library_delete_selected_title">آهنگ‌های انتخاب‌شده حذف شوند؟</string>
+    <string name="library_delete_selected_body">%1$d فایل صوتی برای همیشه از این دستگاه حذف می‌شود. این کار برگشت‌پذیر نیست.</string>
+    <string name="library_remove_selected">حذف موارد انتخاب‌شده از کتابخانه</string>
+    <string name="library_share_selected">اشتراک‌گذاری موارد انتخاب‌شده</string>
+    <string name="library_select_songs">انتخاب آهنگ‌ها</string>
+    <string name="library_songs_removed">%1$d آهنگ از کتابخانه حذف شد</string>
+    <string name="library_remove_failed">حذف آهنگ‌های انتخاب‌شده ممکن نبود</string>
+    <string name="delete_selected_done">%1$d فایل صوتی حذف شد</string>
+    <string name="delete_selected_partial">%1$d فایل حذف شد. برخی فایل‌های انتخاب‌شده حذف نشدند.</string>
+    <string name="audio_device_disconnected_title">دستگاه صوتی قطع شد</string>
+    <string name="audio_device_disconnected_body">دستگاه صوتی قطع شده است. پیش از ادامهٔ پخش، خروجی انتخاب‌شده را بررسی کنید.</string>
+    <string name="external_audio_unavailable">این فایل صوتی باز نشد.</string>
+    <string name="player_mute">بی‌صدا کردن</string>
+    <string name="player_unmute">با‌صدا کردن</string>
+    <string name="player_volume">بلندی صدای پخش</string>
+    <string name="player_volume_above_safe_level">بلندی صدا از سطح ایمن پیشنهادی بیشتر است</string>
+    <string name="player_rewind_20_seconds">۲۰ ثانیه عقب</string>
+    <string name="player_forward_20_seconds">۲۰ ثانیه جلو</string>
+    <string name="home_favorite_songs">آهنگ‌های موردعلاقه</string>
+    <string name="player_speed_value">سرعت %1$s</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">خانه</string>
+    <string name="nav_library">کتابخانه</string>
+    <string name="nav_playlists">فهرست‌ها</string>
+
+    <!-- Common -->
+    <string name="action_search">جست‌وجو</string>
+    <string name="action_settings">تنظیمات</string>
+    <string name="action_back">بازگشت</string>
+    <string name="action_close">بستن</string>
+    <string name="action_cancel">لغو</string>
+    <string name="action_save">ذخیره</string>
+    <string name="action_create">ساختن</string>
+    <string name="action_delete">حذف</string>
+    <string name="action_rename">تغییر نام</string>
+    <string name="action_confirm">تأیید</string>
+    <string name="action_retry">تلاش دوباره</string>
+    <string name="action_clear">پاک کردن</string>
+    <string name="action_dismiss">نادیده گرفتن</string>
+    <string name="action_more_options">گزینه‌های بیشتر</string>
+    <string name="action_play">پخش</string>
+    <string name="action_pause">مکث</string>
+    <string name="action_next">آهنگ بعدی</string>
+    <string name="action_previous">آهنگ قبلی</string>
+    <string name="action_shuffle">پخش تصادفی</string>
+    <string name="action_repeat">تکرار</string>
+    <string name="action_repeat_off">تکرار خاموش</string>
+    <string name="action_repeat_all">تکرار همه</string>
+    <string name="action_repeat_one">تکرار یکی</string>
+    <string name="action_favorite">افزودن به علاقه‌مندی‌ها</string>
+    <string name="action_unfavorite">حذف از علاقه‌مندی‌ها</string>
+    <string name="action_queue">صف پخش</string>
+    <string name="action_volume">بلندی صدا</string>
+    <string name="action_sleep_timer">تایمر خواب</string>
+    <string name="action_playback_speed">سرعت پخش</string>
+    <string name="action_audio_output">خروجی صدا</string>
+    <string name="action_song_info">اطلاعات آهنگ</string>
+    <string name="action_add_to_playlist">افزودن به فهرست</string>
+    <string name="action_share">اشتراک‌گذاری</string>
+    <string name="action_edit_metadata">ویرایش فراداده</string>
+    <string name="action_refresh">تازه‌سازی</string>
+    <string name="action_play_now">پخش کن</string>
+    <string name="action_play_next">پخش بعدی</string>
+    <string name="action_add_to_queue">افزودن به صف</string>
+    <string name="action_remove_from_playlist">حذف از فهرست</string>
+    <string name="action_hide_from_library">پنهان کردن از کتابخانه</string>
+    <string name="action_delete_file">حذف فایل</string>
+    <string name="action_details">جزئیات</string>
+    <string name="action_sort">مرتب‌سازی</string>
+    <string name="action_sleep_timer_end">پایان تایمر خواب</string>
+    <string name="action_open_app_settings">باز کردن تنظیمات برنامه</string>
+    <string name="action_grant">اجازه دادن</string>
+
+    <!-- Home -->
+    <string name="home_greeting">شنیدن خوب</string>
+    <string name="home_your_music">موسیقی شما</string>
+    <string name="home_library_summary">%1$d آهنگ · %2$d آلبوم در کتابخانه شما</string>
+    <string name="home_library_summary_unknown">در حال بررسی کتابخانه…</string>
+    <string name="home_recently_played">اخیراً پخش‌شده</string>
+    <string name="home_recently_played_empty_title">هنوز چیزی پخش نشده</string>
+    <string name="home_recently_played_empty_body">آهنگ‌هایی که گوش می‌دهید اینجا نمایش داده می‌شوند تا از همان‌جا ادامه دهید.</string>
+    <string name="home_quick_actions">دسترسی سریع</string>
+    <string name="home_resume">ادامه</string>
+    <string name="home_resume_subtitle">ادامه «%1$s»</string>
+    <string name="home_resume_subtitle_fallback">از همان‌جایی که بودید ادامه دهید</string>
+    <string name="home_resume_none">چیزی برای ادامه نیست</string>
+    <string name="home_resume_none_subtitle">یک آهنگ را پخش کنید تا اینجا ادامه دهید</string>
+    <string name="home_open_player">باز کردن پخش‌کننده</string>
+    <string name="home_open_player_subtitle">رفتن به پخش‌کننده کامل</string>
+    <string name="home_shuffle_library">پخش تصادفی کتابخانه</string>
+    <string name="home_shuffle_library_subtitle">پخش همه آهنگ‌ها به ترتیب تصادفی</string>
+    <string name="home_see_all">دیدن همه</string>
+
+    <!-- Library -->
+    <string name="library_title">کتابخانه</string>
+    <string name="library_tab_all_songs">همه آهنگ‌ها</string>
+    <string name="library_tab_recently_added">تازه‌افزوده‌شده</string>
+    <string name="library_scanning">در حال بررسی کتابخانه موسیقی…</string>
+    <string name="library_scanning_progress">بارگذاری آهنگ‌ها: %1$d از %2$d</string>
+    <string name="library_loading_unknown">در حال بارگذاری آهنگ‌ها…</string>
+    <string name="library_empty_title">موسیقی پیدا نشد</string>
+    <string name="library_empty_body">هیچ فایل صوتی روی این دستگاه پیدا نشد. چند آهنگ اضافه کنید و سپس کتابخانه را تازه کنید.</string>
+    <string name="library_error_title">بارگذاری موسیقی ممکن نیست</string>
+    <string name="library_error_body">هنگام خواندن کتابخانه رسانه‌ای خطایی رخ داد.</string>
+    <string name="library_search_empty_title">نتیجه‌ای یافت نشد</string>
+    <string name="library_search_empty_body">چیزی با «%1$s» مطابقت نداشت. عنوان، هنرمند یا آلبوم دیگری را امتحان کنید.</string>
+    <string name="library_search_hint">جست‌وجوی آهنگ، هنرمند، آلبوم</string>
+    <string name="library_clear_search">پاک کردن جست‌وجو</string>
+    <string name="library_sort_title">مرتب‌سازی بر اساس</string>
+    <string name="library_sort_title_label">عنوان</string>
+    <string name="library_sort_artist_label">هنرمند</string>
+    <string name="library_sort_album_label">آلبوم</string>
+    <string name="library_sort_duration_label">مدت‌زمان</string>
+    <string name="library_sort_date_added_label">تاریخ افزودن</string>
+    <string name="library_sort_ascending">صعودی</string>
+    <string name="library_sort_descending">نزولی</string>
+    <string name="library_song_count">%1$d آهنگ</string>
+    <string name="library_favorites_title">علاقه‌مندی‌ها</string>
+    <string name="library_refresh">تازه‌سازی کتابخانه</string>
+    <string name="library_refreshing">در حال تازه‌سازی…</string>
+
+    <!-- Playlists -->
+    <string name="playlists_title">فهرست‌ها</string>
+    <string name="playlists_create">ساختن فهرست</string>
+    <string name="playlists_empty_title">هنوز فهرستی نیست</string>
+    <string name="playlists_empty_body">برای گروه‌بندی آهنگ‌ها یک فهرست بسازید و سپس آن را هرطور خواستید مرتب کنید.</string>
+    <string name="playlist_create_title">فهرست جدید</string>
+    <string name="playlist_edit_title">ویرایش فهرست</string>
+    <string name="playlist_name_label">نام</string>
+    <string name="playlist_description_label">توضیح (اختیاری)</string>
+    <string name="playlist_name_required">نامی وارد کنید</string>
+    <string name="playlist_name_duplicate">فهرستی با این نام از قبل وجود دارد</string>
+    <string name="playlist_delete_title">«%1$s» حذف شود؟</string>
+    <string name="playlist_delete_body">فهرست و ترتیب آهنگ‌های آن حذف می‌شود. فایل‌های صوتی روی دستگاه شما می‌مانند.</string>
+    <string name="playlist_track_count">%1$d آهنگ</string>
+    <string name="playlist_duration">مجموع %1$s</string>
+    <string name="playlist_add_songs">افزودن آهنگ</string>
+    <string name="playlist_empty_title">این فهرست خالی است</string>
+    <string name="playlist_empty_body">برای شروع، آهنگ‌هایی از کتابخانه اضافه کنید.</string>
+    <string name="playlist_created">فهرست ساخته شد</string>
+    <string name="playlist_deleted">فهرست حذف شد</string>
+    <string name="playlist_renamed">نام فهرست تغییر کرد</string>
+    <string name="playlist_song_added">به فهرست افزوده شد</string>
+    <string name="playlist_song_removed">از فهرست حذف شد</string>
+    <string name="playlist_songs_added">%1$d آهنگ افزوده شد</string>
+    <string name="playlist_songs_already_present">از قبل در این فهرست هست</string>
+    <string name="playlist_move_up">انتقال به بالا</string>
+    <string name="playlist_move_down">انتقال به پایین</string>
+    <string name="playlist_reorder_hint">برای تغییر ترتیب، طولانی فشار دهید و بکشید</string>
+    <string name="playlist_artwork_fallback">تصویر فهرست</string>
+
+    <!-- Player -->
+    <string name="player_now_playing">در حال پخش</string>
+    <string name="player_minimize">کوچک کردن پخش‌کننده</string>
+    <string name="player_artwork_description">تصویر آلبوم %1$s</string>
+    <string name="player_unknown_artist">هنرمند نامشخص</string>
+    <string name="player_unknown_album">آلبوم نامشخص</string>
+    <string name="player_unknown_duration">--:--</string>
+    <string name="player_seek_bar">موقعیت پخش</string>
+    <string name="player_position">موقعیت %1$s از %2$s</string>
+    <string name="player_speed_label">سرعت %1$s×</string>
+
+    <!-- Queue -->
+    <string name="queue_title">صف</string>
+    <string name="queue_now_playing">در حال پخش</string>
+    <string name="queue_up_next">بعدی</string>
+    <string name="queue_clear">پاک کردن صف</string>
+    <string name="queue_clear_title">صف پاک شود؟</string>
+    <string name="queue_clear_body">آهنگ‌های بعدی حذف می‌شوند. آهنگ در حال پخش همچنان پخش می‌شود.</string>
+    <string name="queue_remove">حذف از صف</string>
+    <string name="queue_empty_title">صف خالی است</string>
+    <string name="queue_empty_body">چیزی از کتابخانه پخش کنید تا صف اینجا نمایش داده شود.</string>
+    <string name="queue_move_up">انتقال به بالا</string>
+    <string name="queue_move_down">انتقال به پایین</string>
+    <string name="queue_item_playing">در حال پخش</string>
+
+    <!-- Sleep timer -->
+    <string name="sleep_timer_title">تایمر خواب</string>
+    <string name="sleep_timer_minutes">%1$d دقیقه</string>
+    <string name="sleep_timer_off">خاموش</string>
+    <string name="sleep_timer_active">تایمر خواب تا %1$s دیگر تمام می‌شود</string>
+    <string name="sleep_timer_set">تایمر برای %1$d دقیقه تنظیم شد</string>
+
+    <!-- Settings -->
+    <string name="settings_title">تنظیمات</string>
+    <string name="settings_appearance">ظاهر</string>
+    <string name="settings_theme">پوسته</string>
+    <string name="settings_theme_system">پیش‌فرض سیستم</string>
+    <string name="settings_theme_light">روشن</string>
+    <string name="settings_theme_dark">تیره</string>
+    <string name="settings_dynamic_color">رنگ پویا</string>
+    <string name="settings_dynamic_color_summary">استفاده از رنگ‌های پس‌زمینه (اندروید ۱۲ به بعد)</string>
+    <string name="settings_dynamic_color_unavailable">نیازمند اندروید ۱۲ یا جدیدتر</string>
+    <string name="settings_artwork_animation">جلوهٔ تصویر آلبوم</string>
+    <string name="settings_artwork_animation_summary">حرکت ملایم روی تصویر در حال پخش</string>
+    <string name="settings_density">تراکم فهرست آهنگ‌ها</string>
+    <string name="settings_density_comfortable">راحت</string>
+    <string name="settings_density_compact">فشرده</string>
+
+    <string name="settings_playback">پخش</string>
+    <string name="settings_resume_playback">ادامهٔ پخش هنگام باز شدن برنامه</string>
+    <string name="settings_resume_playback_summary">بازگرداندن آخرین آهنگ و موقعیت پخش</string>
+    <string name="settings_shuffle_new">پخش تصادفی در نشست‌های جدید</string>
+    <string name="settings_shuffle_new_summary">شروع هر صف جدید به ترتیب تصادفی</string>
+    <string name="settings_default_repeat">حالت پیش‌فرض تکرار</string>
+    <string name="settings_playback_speed">سرعت پیش‌فرض پخش</string>
+    <string name="settings_gapless">پخش بدون وقفه</string>
+    <string name="settings_gapless_summary">اتصال آهنگ‌ها بدون سکوت، هرجا قالب اجازه دهد</string>
+    <string name="settings_crossfade">محو تدریجی</string>
+    <string name="settings_crossfade_summary">توسط موتور پخش فعلی پشتیبانی نمی‌شود</string>
+
+    <string name="settings_library">کتابخانه</string>
+    <string name="settings_rescan">بررسی دوبارهٔ کتابخانهٔ موسیقی</string>
+    <string name="settings_rescan_summary">جست‌وجوی فایل‌های صوتی جدید یا تغییریافته</string>
+    <string name="settings_include_non_music">نمایش فایل‌های غیرموسیقی</string>
+    <string name="settings_include_non_music_summary">شامل زنگ‌ها، اعلان‌ها و پادکست‌ها</string>
+    <string name="settings_show_artwork">نمایش تصویر آلبوم</string>
+    <string name="settings_show_artwork_summary">برای پیمایش سریع‌تر در کتابخانه‌های بزرگ خاموش کنید</string>
+    <string name="settings_default_sort">ترتیب مرتب‌سازی پیش‌فرض</string>
+    <string name="settings_hidden_tracks">آهنگ‌های پنهان</string>
+    <string name="settings_hidden_tracks_summary">%1$d آهنگ از کتابخانه پنهان شده است</string>
+
+    <string name="settings_audio">صدا</string>
+    <string name="settings_volume">بلندی صدا</string>
+    <string name="settings_volume_summary">تنظیم بلندی صدای رسانه</string>
+    <string name="settings_system_volume">باز کردن بلندی صدای سیستم</string>
+    <string name="settings_system_volume_summary">تنظیم بلندی صدا با پنل سیستم</string>
+    <string name="settings_audio_output">خروجی صدا</string>
+    <string name="settings_audio_output_summary">جابه‌جایی میان بلندگو، هدفون سیمی و دستگاه‌های بلوتوث</string>
+    <string name="settings_equalizer">اکولایزر</string>
+    <string name="settings_equalizer_summary">نیازمند موتور جلوه‌های صوتی سیستم</string>
+    <string name="settings_equalizer_unavailable">اکولایزر سیستم روی این دستگاه در دسترس نیست</string>
+
+    <string name="settings_storage">ذخیره‌سازی و مجوزها</string>
+    <string name="settings_permission_title">دسترسی به موسیقی</string>
+    <string name="settings_permission_granted">اعطا شد — کتابخانه شما در دسترس است.</string>
+    <string name="settings_permission_denied">رد شد — برنامه نمی‌تواند فایل‌های صوتی را بخواند.</string>
+    <string name="settings_permission_body">برنامهٔ Audiofy برای فهرست کردن و پخش موسیقی دستگاه به مجوز خواندن فایل‌های صوتی نیاز دارد. هیچ داده‌ای بارگذاری یا ارسال نمی‌شود.</string>
+    <string name="settings_permission_open_settings">باز کردن تنظیمات برنامه</string>
+    <string name="settings_storage_info">%1$d آهنگ · %2$s صوت</string>
+    <string name="settings_storage_info_unknown">%1$d آهنگ</string>
+
+    <string name="settings_about">درباره</string>
+    <string name="settings_version">نسخهٔ %1$s</string>
+    <string name="settings_version_value">%1$s (%2$d)</string>
+    <string name="settings_privacy_title">حریم خصوصی</string>
+    <string name="settings_privacy_body">برنامهٔ Audiofy کاملاً آفلاین کار می‌کند. هرگز موسیقی شما را بارگذاری، تحلیل یا به اشتراک نمی‌گذارد. فهرست‌ها، علاقه‌مندی‌ها و تاریخچه فقط روی همین دستگاه ذخیره می‌شوند.</string>
+    <string name="settings_licenses">پروانه‌های متن‌باز</string>
+    <string name="settings_licenses_summary">پروانهٔ کتابخانه‌هایی که این برنامه با آن‌ها ساخته شده است</string>
+    <string name="settings_feedback">ارسال بازخورد</string>
+    <string name="settings_feedback_summary">باز کردن ایمیل برای گزارش مشکل یا پیشنهاد قابلیت</string>
+    <string name="settings_feedback_unavailable">هیچ نشانی بازخوردی تنظیم نشده است</string>
+
+    <!-- Permissions -->
+    <string name="permission_required_title">اجازهٔ دسترسی به موسیقی</string>
+    <string name="permission_required_body">برنامهٔ Audiofy برای نمایش آهنگ‌ها در کتابخانه و پخش آفلاین آن‌ها به دسترسی فایل‌های صوتی نیاز دارد. این مجوز فقط خواندنی است و فایل‌های شما هرگز از دستگاه خارج نمی‌شوند.</string>
+    <string name="permission_denied_body">دسترسی به موسیقی رد شد. برای استفاده از کتابخانه آن را در تنظیمات سیستم فعال کنید.</string>
+    <string name="permission_denied_permanently">دسترسی به موسیقی برای همیشه رد شد. برای اعطای مجوز، تنظیمات برنامه را باز کنید.</string>
+    <string name="permission_notification_title">اجازهٔ اعلان‌ها</string>
+    <string name="permission_notification_body">اعلان‌ها امکان کنترل پخش از صفحهٔ قفل و نوار اعلان را فراهم می‌کنند. برنامه بدون آن‌ها هم کار می‌کند، اما بدون کنترل پخش.</string>
+
+    <!-- Song details / metadata -->
+    <string name="details_title">اطلاعات آهنگ</string>
+    <string name="details_title_field">عنوان</string>
+    <string name="details_artist_field">هنرمند</string>
+    <string name="details_album_field">آلبوم</string>
+    <string name="details_genre_field">سبک</string>
+    <string name="details_year_field">سال</string>
+    <string name="details_track_field">شمارهٔ آهنگ</string>
+    <string name="details_duration_field">مدت‌زمان</string>
+    <string name="details_size_field">حجم</string>
+    <string name="details_path_field">فایل</string>
+    <string name="details_added_field">افزوده‌شده</string>
+    <string name="details_unknown">نامشخص</string>
+
+    <string name="metadata_edit_title">ویرایش فراداده</string>
+    <string name="metadata_edit_intro">تغییرات از طریق ارائه‌دهندهٔ رسانهٔ سیستم روی فایل نوشته می‌شود.</string>
+    <string name="metadata_edit_saved">فراداده به‌روزرسانی شد</string>
+    <string name="metadata_edit_failed">به‌روزرسانی فایل ممکن نشد. ارائه‌دهندهٔ رسانه تغییر را نپذیرفت.</string>
+    <string name="metadata_edit_permission_title">اجازهٔ ویرایش این فایل</string>
+    <string name="metadata_edit_permission_body">اندروید پیش از اجازهٔ نوشتن برنامهٔ دیگر روی این فایل صوتی، رضایت شما را لازم دارد.</string>
+    <string name="metadata_edit_unsupported">ویرایش فراداده در این نسخهٔ اندروید پشتیبانی نمی‌شود.</string>
+    <string name="metadata_edit_no_changes">تغییری برای ذخیره وجود ندارد</string>
+
+    <!-- Delete -->
+    <string name="delete_file_title">«%1$s» حذف شود؟</string>
+    <string name="delete_file_body">فایل صوتی برای همیشه از این دستگاه حذف می‌شود. این کار برگشت‌پذیر نیست.</string>
+    <string name="delete_file_request_title">اجازهٔ حذف</string>
+    <string name="delete_file_request_body">اندروید پیش از اجازهٔ حذف این فایل صوتی به برنامه، رضایت شما را لازم دارد.</string>
+    <string name="delete_file_done">فایل حذف شد</string>
+    <string name="delete_file_failed">حذف فایل ممکن نشد</string>
+
+    <string name="hide_track_title">«%1$s» پنهان شود؟</string>
+    <string name="hide_track_body">از کتابخانهٔ این برنامه حذف می‌شود. فایل صوتی روی دستگاه شما می‌ماند.</string>
+    <string name="hide_track_done">از کتابخانه پنهان شد</string>
+    <string name="unhide_track_done">به کتابخانه بازگردانده شد</string>
+
+    <string name="share_chooser_title">اشتراک‌گذاری آهنگ</string>
+    <string name="share_failed">اشتراک‌گذاری فایل صوتی انتخاب‌شده ممکن نشد.</string>
+
+    <!-- Playback notification -->
+    <string name="playback_channel_name">پخش</string>
+    <string name="playback_channel_description">کنترل‌های آهنگ در حال پخش</string>
+    <string name="playback_error_title">خطای پخش</string>
+    <string name="playback_error_generic">این آهنگ قابل پخش نبود</string>
+    <string name="playback_error_source_unavailable">فایل صوتی دیگر در دسترس نیست</string>
+    <string name="playback_error_source_io">فایل صوتی خوانده نشد</string>
+    <string name="playback_error_decode">این قالب صوتی پشتیبانی نمی‌شود</string>
+</resources>

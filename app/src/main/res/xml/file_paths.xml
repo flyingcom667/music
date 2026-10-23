@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- The audio files of the MediaStore live in the shared storage. -->
+    <external-path name="external_files" path="." />
+    <!-- SD cards and other volumes are mounted below /storage. -->
+    <root-path name="storage_files" path="/storage/" />
+</paths>
