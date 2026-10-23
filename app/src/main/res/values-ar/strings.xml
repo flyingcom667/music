@@ -45,6 +45,7 @@
     <string name="action_cancel">إلغاء</string>
     <string name="action_save">حفظ</string>
     <string name="action_create">إنشاء</string>
+    <string name="action_add">إضافة</string>
     <string name="action_delete">حذف</string>
     <string name="action_rename">إعادة تسمية</string>
     <string name="action_confirm">تأكيد</string>

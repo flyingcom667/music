@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -96,6 +97,7 @@ import com.tidalmusic.player.ui.components.SongRow
 import com.tidalmusic.player.ui.components.TidalTextButton
 import com.tidalmusic.player.ui.viewmodel.LibraryStatus
 import com.tidalmusic.player.ui.viewmodel.LibraryUiState
+import kotlinx.coroutines.launch
 
 /**
  * The Library screen: exactly two primary tabs, a search field and a sorting action.
@@ -756,7 +758,7 @@ private fun LetterRail(
                 }
             },
         verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterEnd,
+        horizontalAlignment = Alignment.End,
     ) {
         letters.forEach { letter ->
             val isActive = letter == activeLetter
@@ -787,7 +789,7 @@ private fun LetterRail(
  * how many songs are checked and offers Cancel / Add actions above the navigation bar.
  */
 @Composable
-private fun AddToPlaylistBar(
+private fun BoxScope.AddToPlaylistBar(
     playlistName: String,
     selectedCount: Int,
     onCancel: () -> Unit,

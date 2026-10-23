@@ -45,6 +45,7 @@
     <string name="action_cancel">لغو</string>
     <string name="action_save">ذخیره</string>
     <string name="action_create">ساختن</string>
+    <string name="action_add">افزودن</string>
     <string name="action_delete">حذف</string>
     <string name="action_rename">تغییر نام</string>
     <string name="action_confirm">تأیید</string>
