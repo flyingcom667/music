@@ -320,4 +320,9 @@
     <string name="playback_error_source_unavailable">فایل صوتی دیگر در دسترس نیست</string>
     <string name="playback_error_source_io">فایل صوتی خوانده نشد</string>
     <string name="playback_error_decode">این قالب صوتی پشتیبانی نمی‌شود</string>
+    <string name="library_add_n_to_playlist">اضافه کردن %1$d به «%2$s»</string>
+    <string name="library_pick_songs_for_playlist">انتخاب آهنگ برای «%1$s»</string>
+    <string name="library_letter_rail">پرش به حرف</string>
+    <string name="library_selected_count_short">%1$d انتخاب شد</string>
+    <string name="playlist_songs_added_count">%1$d آهنگ به فهرست اضافه شد</string>
 </resources>

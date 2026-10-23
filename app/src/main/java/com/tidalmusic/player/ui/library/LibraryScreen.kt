@@ -1,6 +1,11 @@
 package com.tidalmusic.player.ui.library
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.text.KeyboardActions
@@ -9,18 +14,25 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.PlaylistAdd
 import androidx.compose.material.icons.automirrored.rounded.Sort
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.LibraryMusic
@@ -31,11 +43,13 @@ import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.PrimaryTabRow
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -54,13 +68,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -105,11 +123,20 @@ fun LibraryScreen(
     onBack: () -> Unit,
     openSearch: Boolean,
     onSearchOpened: () -> Unit,
+    addPlaylistName: String? = null,
+    onAddSelectedToPlaylist: (List<Song>) -> Unit = {},
+    onExitAddMode: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var searchExpanded by remember { mutableStateOf(false) }
-    var selectionMode by rememberSaveable { mutableStateOf(false) }
+    // Entering the add-to-playlist flow switches the screen into selection mode so the
+    // user can immediately start ticking songs.
+    var selectionMode by rememberSaveable { mutableStateOf(addPlaylistName != null) }
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    LaunchedEffect(addPlaylistName) {
+        if (addPlaylistName != null) selectionMode = true
+    }
     var selectedSongIds by rememberSaveable(
         stateSaver = object : androidx.compose.runtime.saveable.Saver<Set<Long>, List<Long>> {
             override fun androidx.compose.runtime.saveable.SaverScope.save(
@@ -165,12 +192,28 @@ fun LibraryScreen(
     val songs = if (selectedTab == 0) state.songs else state.recentlyAdded
     val titleHiddenByScroll = listState.firstVisibleItemIndex > 0 ||
         listState.firstVisibleItemScrollOffset > 0
+    // The letter rail follows the *visible* tab: the All Songs tab is sorted by title, so
+    // the precomputed index applies; other views jump to the first row of the matching song.
+    val showLetterRail = selectedTab == 0 && state.indexLetters.size > 1
+    val activeLetter = remember(listState, state.indexLetters) {
+        val firstIndex = listState.firstVisibleItemIndex.coerceAtMost(songs.lastIndex)
+        songs.getOrNull(firstIndex)?.title?.let { visibleTitle ->
+            val target = com.tidalmusic.player.domain.LibraryQueries.indexLetter(visibleTitle)
+            state.indexLetters.firstOrNull { it == target } ?: state.indexLetters.firstOrNull()
+        }
+    }
 
-    Column(
-        modifier = modifier
+    fun scrollToLetter(letter: Char) {
+        val start = state.startIndexFor(letter) ?: return
+        scope.launch { listState.animateScrollToItem(start) }
+    }
+
+    Box(
+        modifier = Modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.background),
     ) {
+    Column(modifier = Modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -179,11 +222,21 @@ fun LibraryScreen(
         ) {
             if (selectionMode) {
                 Text(
-                    text = stringResource(R.string.library_selection_count, selectedSongIds.size),
-                    style = MaterialTheme.typography.titleLarge,
+                    text = if (addPlaylistName != null && selectedSongIds.isNotEmpty()) {
+                        stringResource(
+                            R.string.library_add_n_to_playlist,
+                            selectedSongIds.size,
+                            addPlaylistName,
+                        )
+                    } else if (addPlaylistName != null) {
+                        stringResource(R.string.library_pick_songs_for_playlist, addPlaylistName)
+                    } else {
+                        stringResource(R.string.library_selection_count, selectedSongIds.size)
+                    },
+                    style = MaterialTheme.typography.titleMedium,
                     color = MaterialTheme.colorScheme.onBackground,
                     modifier = Modifier.weight(1f),
-                    maxLines = 1,
+                    maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
                 IconButton(
@@ -202,34 +255,65 @@ fun LibraryScreen(
                         contentDescription = stringResource(R.string.library_select_all),
                     )
                 }
+                if (addPlaylistName == null) {
+                    IconButton(
+                        onClick = {
+                            val selected = state.allSongs.values.filter { it.id in selectedSongIds }
+                            if (selected.isNotEmpty()) {
+                                onShareSongs(selected)
+                                clearSelection()
+                            }
+                        },
+                        enabled = selectedSongIds.isNotEmpty(),
+                        modifier = Modifier.size(48.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.Share,
+                            contentDescription = stringResource(R.string.library_share_selected),
+                        )
+                    }
+                    IconButton(
+                        onClick = { confirmDelete = true },
+                        enabled = selectedSongIds.isNotEmpty(),
+                        modifier = Modifier.size(48.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.Rounded.RemoveCircleOutline,
+                            contentDescription = stringResource(R.string.library_delete_selected),
+                            tint = MaterialTheme.colorScheme.error,
+                        )
+                    }
+                } else {
+                    // "Add" is the primary action of the flow: it stays disabled until at
+                    // least one song is checked, so nothing can be added accidentally.
+                    FilledTonalButton(
+                        onClick = {
+                            val selected = state.allSongs.values.filter { it.id in selectedSongIds }
+                            onAddSelectedToPlaylist(selected)
+                            clearSelection()
+                            onExitAddMode()
+                        },
+                        enabled = selectedSongIds.isNotEmpty(),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Text(
+                            text = stringResource(R.string.action_add),
+                            modifier = Modifier.padding(start = 6.dp),
+                        )
+                    }
+                }
                 IconButton(
                     onClick = {
-                        val selected = state.allSongs.values.filter { it.id in selectedSongIds }
-                        if (selected.isNotEmpty()) {
-                            onShareSongs(selected)
-                            clearSelection()
-                        }
+                        clearSelection()
+                        onExitAddMode()
                     },
-                    enabled = selectedSongIds.isNotEmpty(),
                     modifier = Modifier.size(48.dp),
                 ) {
-                    Icon(
-                        imageVector = Icons.Rounded.Share,
-                        contentDescription = stringResource(R.string.library_share_selected),
-                    )
-                }
-                IconButton(
-                    onClick = { confirmDelete = true },
-                    enabled = selectedSongIds.isNotEmpty(),
-                    modifier = Modifier.size(48.dp),
-                ) {
-                    Icon(
-                        imageVector = Icons.Rounded.RemoveCircleOutline,
-                        contentDescription = stringResource(R.string.library_delete_selected),
-                        tint = MaterialTheme.colorScheme.error,
-                    )
-                }
-                IconButton(onClick = ::clearSelection, modifier = Modifier.size(48.dp)) {
                     Icon(
                         imageVector = Icons.Rounded.Close,
                         contentDescription = stringResource(R.string.action_cancel),
@@ -382,49 +466,86 @@ fun LibraryScreen(
                 if (state.isRefreshing) {
                     InlineLoadingRow(label = stringResource(R.string.library_refreshing))
                 }
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(top = 4.dp, bottom = 32.dp),
-                ) {
-                    itemsIndexed(items = songs, key = { _, song -> song.id }) { index, song ->
-                        val checked = song.id in selectedSongIds
-                        SongRow(
-                            modifier = Modifier.animateItem(),
-                            song = song,
-                            isCurrent = song.id == currentSongId,
-                            isPlaying = isPlaying,
-                            isFavorite = song.id in state.favorites,
-                            showArtwork = true,
-                            compact = false,
-                            isSelected = checked,
-                            selectionMode = selectionMode,
-                            selectionCheckedLabel = stringResource(R.string.library_selected_item),
-                            selectionUncheckedLabel = stringResource(R.string.library_not_selected_item),
-                            onPlay = {
-                                if (selectionMode) {
-                                    selectedSongIds = if (song.id in selectedSongIds) {
-                                        selectedSongIds - song.id
+                Box(modifier = Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.fillMaxSize(),
+                        contentPadding = PaddingValues(
+                            top = 4.dp,
+                            bottom = 32.dp,
+                            end = if (showLetterRail && !selectionMode) 28.dp else 0.dp,
+                        ),
+                    ) {
+                        itemsIndexed(items = songs, key = { _, song -> song.id }) { index, song ->
+                            val checked = song.id in selectedSongIds
+                            SongRow(
+                                modifier = Modifier.animateItem(),
+                                song = song,
+                                isCurrent = song.id == currentSongId,
+                                isPlaying = isPlaying,
+                                isFavorite = song.id in state.favorites,
+                                showArtwork = true,
+                                compact = false,
+                                isSelected = checked,
+                                selectionMode = selectionMode,
+                                selectionCheckedLabel = stringResource(R.string.library_selected_item),
+                                selectionUncheckedLabel = stringResource(R.string.library_not_selected_item),
+                                onPlay = {
+                                    if (selectionMode) {
+                                        selectedSongIds = if (song.id in selectedSongIds) {
+                                            selectedSongIds - song.id
+                                        } else {
+                                            selectedSongIds + song.id
+                                        }
                                     } else {
-                                        selectedSongIds + song.id
+                                        onPlay(songs, index)
                                     }
-                                } else {
-                                    onPlay(songs, index)
-                                }
-                            },
-                            onLongClick = {
-                                if (!selectionMode) {
-                                    selectionMode = true
-                                }
-                                selectedSongIds = selectedSongIds + song.id
-                            },
-                            onOverflow = { onSongOverflow(song) },
-                            overflowLabel = stringResource(R.string.action_more_options),
-                        )
+                                },
+                                onLongClick = {
+                                    if (!selectionMode) {
+                                        selectionMode = true
+                                    }
+                                    selectedSongIds = selectedSongIds + song.id
+                                },
+                                onOverflow = { onSongOverflow(song) },
+                                overflowLabel = stringResource(R.string.action_more_options),
+                            )
+                        }
                     }
 
+                    // Fast-search rail: only the letters that actually exist in the list.
+                    if (showLetterRail && !selectionMode) {
+                        LetterRail(
+                            letters = state.indexLetters,
+                            activeLetter = activeLetter,
+                            onLetterClick = ::scrollToLetter,
+                            modifier = Modifier
+                                .align(Alignment.CenterEnd)
+                                .padding(end = 2.dp),
+                        )
+                    }
                 }
             }
+        }
+    }
+
+        // The add-to-playlist flow reuses this screen: while a target playlist is set, an
+        // explicit confirmation bar sits at the bottom of the library.
+        addPlaylistName?.let { name ->
+            AddToPlaylistBar(
+                playlistName = name,
+                selectedCount = selectedSongIds.size,
+                onCancel = {
+                    clearSelection()
+                    onExitAddMode()
+                },
+                onConfirm = {
+                    val selected = state.allSongs.values.filter { it.id in selectedSongIds }
+                    onAddSelectedToPlaylist(selected)
+                    clearSelection()
+                    onExitAddMode()
+                },
+            )
         }
     }
 
@@ -603,4 +724,120 @@ internal fun SortOrder.labelRes(): Int = when (this) {
     SortOrder.ALBUM -> R.string.library_sort_album_label
     SortOrder.DURATION -> R.string.library_sort_duration_label
     SortOrder.DATE_ADDED -> R.string.library_sort_date_added_label
+}
+
+/**
+ * The fast-search letter rail shown on the right edge of the library list.
+ *
+ * It only contains the letters that actually exist in the current song list (precomputed by
+ * the view model), so tapping any letter always jumps somewhere. A vertical drag scrubs
+ * through the letters continuously, like the index bars in large system lists.
+ */
+@Composable
+private fun LetterRail(
+    letters: List<Char>,
+    activeLetter: Char?,
+    onLetterClick: (Char) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val railLabel = stringResource(R.string.library_letter_rail)
+    Column(
+        modifier = modifier
+            .widthIn(min = 24.dp)
+            .fillMaxHeight()
+            .semantics { contentDescription = railLabel }
+            .pointerInput(letters) {
+                detectVerticalDragGestures { change, _ ->
+                    val fraction = (change.position.y / size.height).coerceIn(0f, 1f)
+                    val index = (fraction * letters.size).toInt()
+                        .coerceIn(letters.indices)
+                    onLetterClick(letters[index])
+                    change.consume()
+                }
+            },
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterEnd,
+    ) {
+        letters.forEach { letter ->
+            val isActive = letter == activeLetter
+            Text(
+                text = letter.toString(),
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontSize = if (isActive) 12.sp else 10.sp,
+                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
+                ),
+                color = if (isActive) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                modifier = Modifier
+                    .padding(vertical = 1.dp, horizontal = 4.dp)
+                    .clickable(
+                        interactionSource = remember { MutableInteractionSource() },
+                        indication = null,
+                    ) { onLetterClick(letter) },
+            )
+        }
+    }
+}
+
+/**
+ * Bottom confirmation bar for the "add songs to playlist" flow: shows the target playlist,
+ * how many songs are checked and offers Cancel / Add actions above the navigation bar.
+ */
+@Composable
+private fun AddToPlaylistBar(
+    playlistName: String,
+    selectedCount: Int,
+    onCancel: () -> Unit,
+    onConfirm: () -> Unit,
+) {
+    Surface(
+        modifier = Modifier
+            .align(Alignment.BottomCenter)
+            .fillMaxWidth()
+            .navigationBarsPadding()
+            .padding(horizontal = 12.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(18.dp),
+        tonalElevation = 4.dp,
+        shadowElevation = 6.dp,
+        color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+            )
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = playlistName,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    text = stringResource(R.string.library_selected_count_short, selectedCount),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            TidalTextButton(onClick = onCancel) {
+                Text(stringResource(R.string.action_cancel))
+            }
+            FilledTonalButton(
+                onClick = onConfirm,
+                enabled = selectedCount > 0,
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+            ) {
+                Text(stringResource(R.string.action_add))
+            }
+        }
+    }
 }

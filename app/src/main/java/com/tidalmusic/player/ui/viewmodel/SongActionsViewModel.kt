@@ -125,18 +125,29 @@ class SongActionsViewModel(
     // ------------------------------------------------------------------ playlists
 
     fun addToPlaylist(playlistId: Long, songId: Long) {
+        addSongsToPlaylist(playlistId, listOf(songId))
+    }
+
+    /**
+     * Adds many songs at once — the Library "add to playlist" flow checks songs with the
+     * selection checkboxes and confirms them in a single batch.
+     */
+    fun addSongsToPlaylist(playlistId: Long, songIds: List<Long>) {
+        if (songIds.isEmpty()) return
         viewModelScope.launch {
-            userLibraryRepository.addSongsToPlaylist(playlistId, listOf(songId)).fold(
+            userLibraryRepository.addSongsToPlaylist(playlistId, songIds).fold(
                 onSuccess = { added ->
                     _messages.tryEmit(
                         if (added > 0) {
-                            UiMessage(R.string.playlist_song_added)
+                            UiMessage(R.string.playlist_songs_added_count, args = listOf(added))
                         } else {
                             UiMessage(R.string.playlist_songs_already_present)
                         },
                     )
                 },
-                onFailure = { _messages.tryEmit(UiMessage(R.string.playlist_song_added, isError = true)) },
+                onFailure = {
+                    _messages.tryEmit(UiMessage(R.string.playlist_song_added, isError = true))
+                },
             )
         }
     }

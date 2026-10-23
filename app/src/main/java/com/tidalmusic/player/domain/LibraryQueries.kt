@@ -79,6 +79,41 @@ object LibraryQueries {
     fun recentlyAdded(songs: List<Song>): List<Song> =
         songs.sortedWith(compareByDescending<Song> { it.dateAdded }.thenBy { it.title })
 
+    // ------------------------------------------------------------------ index letters
+
+    /**
+     * The first letter/initial of a title in its sorted position — the same folding the
+     * sectioned list and the letter rail use, so a letter shown in the rail always has at
+     * least one song behind it.
+     */
+    fun indexLetter(title: String): Char {
+        val normalized = normalize(title).trim()
+        if (normalized.isEmpty()) return '#'
+        val first = normalized.first()
+        return if (first.isLetterOrDigit()) first.uppercaseChar() else '#'
+    }
+
+    /**
+     * The distinct letters present in [songs], in the exact order the sorted list produces
+     * them.
+     *
+     * Only letters that actually exist appear, which is what the fast-search letter rail
+     * renders. Titles that begin with a symbol or whitespace fold to '#'.
+     */
+    fun availableIndexLetters(songs: List<Song>, spec: SortSpec): Set<Char> {
+        val comparator = stringComparator()
+        val ordered = when (spec.order) {
+            SortOrder.TITLE -> songs.asReversedIf(spec.direction == SortDirection.DESCENDING)
+            else -> songs.sortedWith(
+                Comparator { a, b -> comparator.compare(a.title, b.title) },
+            ).asReversedIf(spec.direction == SortDirection.DESCENDING)
+        }
+        return LinkedHashSet(ordered.map { indexLetter(it.title) })
+    }
+
+    private fun <T> List<T>.asReversedIf(condition: Boolean): List<T> =
+        if (condition) this.asReversed() else this
+
     /** Resolves [ids] to songs, keeping the id order (used for playlists and history). */
     fun byIds(songsById: Map<Long, Song>, ids: List<Long>): List<Song> =
         if (ids.isEmpty()) emptyList() else ids.mapNotNull { songsById[it] }

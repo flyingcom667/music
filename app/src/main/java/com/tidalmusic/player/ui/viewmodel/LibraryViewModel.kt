@@ -43,10 +43,17 @@ data class LibraryUiState(
     val scanTotal: Int = 0,
     val errorMessage: String? = null,
     val permissionGranted: Boolean = true,
+    /** The first letters present in [songs], in list order — the letter rail shows only these. */
+    val indexLetters: List<Char> = emptyList(),
+    /** Row index of the first song for each letter in [indexLetters]. */
+    val letterStartIndices: Map<Char, Int> = emptyMap(),
 ) {
     val isEmpty: Boolean get() = songs.isEmpty() && recentlyAdded.isEmpty()
     val isSearching: Boolean get() = query.isNotBlank()
     val songCount: Int get() = allSongs.size
+
+    /** The row the letter rail should scroll to for [letter], or null when it has no songs. */
+    fun startIndexFor(letter: Char): Int? = letterStartIndices[letter]
 }
 
 private data class ComputedLibrary(
@@ -55,6 +62,8 @@ private data class ComputedLibrary(
     val recentlyAdded: List<Song>,
     val allSongs: Map<Long, Song>,
     val recentlyPlayed: List<Song>,
+    val indexLetters: List<Char>,
+    val letterStartIndices: Map<Char, Int>,
 )
 
 /**
@@ -236,12 +245,26 @@ class LibraryViewModel(
                 val visible = sourceSongs.filterNot { it.id in hidden }
                 val filtered = LibraryQueries.search(visible, query)
                 val byId = visible.associateBy { it.id }
+                val sorted = LibraryQueries.sort(filtered, sort)
+                // One pass over the sorted list builds the letter rail index: only letters
+                // that actually have songs are recorded, together with their first row.
+                val letters = ArrayList<Char>()
+                val starts = HashMap<Char, Int>()
+                sorted.forEachIndexed { index, song ->
+                    val letter = LibraryQueries.indexLetter(song.title)
+                    if (letter !in starts) {
+                        starts[letter] = index
+                        letters += letter
+                    }
+                }
                 ComputedLibrary(
                     status = if (visible.isEmpty()) LibraryStatus.EMPTY else LibraryStatus.CONTENT,
-                    songs = LibraryQueries.sort(filtered, sort),
+                    songs = sorted,
                     recentlyAdded = LibraryQueries.recentlyAdded(filtered),
                     allSongs = byId,
                     recentlyPlayed = historyIds.mapNotNull { byId[it] },
+                    indexLetters = letters,
+                    letterStartIndices = starts,
                 )
             }
             _state.value = _state.value.copy(
@@ -250,6 +273,8 @@ class LibraryViewModel(
                 recentlyAdded = result.recentlyAdded,
                 allSongs = result.allSongs,
                 recentlyPlayed = result.recentlyPlayed,
+                indexLetters = result.indexLetters,
+                letterStartIndices = result.letterStartIndices,
                 isRefreshing = false,
             )
         }
