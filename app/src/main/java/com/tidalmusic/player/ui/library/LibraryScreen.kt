@@ -16,13 +16,16 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.SelectAll
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material.icons.rounded.Share
@@ -106,8 +109,14 @@ fun LibraryScreen(
 ) {
     var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var searchExpanded by remember { mutableStateOf(false) }
-    var selectionMode by remember { mutableStateOf(false) }
-    var selectedSongIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
+    var selectionMode by rememberSaveable { mutableStateOf(false) }
+    var selectedSongIds by rememberSaveable(
+        stateSaver = object : androidx.compose.runtime.saveable.Saver<Set<Long>, List<Long>> {
+            override fun save(value: Set<Long>): List<Long> = value.toList()
+            override fun restore(value: List<Long>): Set<Long> = value.toSet()
+        },
+        key = "library_selected_song_ids",
+    ) { mutableStateOf<Set<Long>>(emptySet()) }
     var confirmDelete by remember { mutableStateOf(false) }
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -174,6 +183,22 @@ fun LibraryScreen(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
+                IconButton(
+                    onClick = {
+                        val visibleIds = songs.map { it.id }.toSet()
+                        selectedSongIds = if (visibleIds.all { it in selectedSongIds }) {
+                            selectedSongIds - visibleIds
+                        } else {
+                            selectedSongIds + visibleIds
+                        }
+                    },
+                    modifier = Modifier.size(48.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.SelectAll,
+                        contentDescription = stringResource(R.string.library_select_all),
+                    )
+                }
                 IconButton(
                     onClick = {
                         val selected = state.allSongs.values.filter { it.id in selectedSongIds }
@@ -357,9 +382,10 @@ fun LibraryScreen(
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 24.dp),
+                    contentPadding = PaddingValues(top = 4.dp, bottom = 32.dp),
                 ) {
                     itemsIndexed(items = songs, key = { _, song -> song.id }) { index, song ->
+                        val checked = song.id in selectedSongIds
                         SongRow(
                             modifier = Modifier.animateItem(),
                             song = song,
@@ -368,6 +394,10 @@ fun LibraryScreen(
                             isFavorite = song.id in state.favorites,
                             showArtwork = true,
                             compact = false,
+                            isSelected = checked,
+                            selectionMode = selectionMode,
+                            selectionCheckedLabel = stringResource(R.string.library_selected_item),
+                            selectionUncheckedLabel = stringResource(R.string.library_not_selected_item),
                             onPlay = {
                                 if (selectionMode) {
                                     selectedSongIds = if (song.id in selectedSongIds) {
@@ -493,7 +523,11 @@ fun SortDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.library_sort_title)) },
         text = {
-            Column {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(rememberScrollState()),
+            ) {
                 SortOrder.entries.forEach { option ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),

@@ -106,7 +106,7 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = PaddingValues(bottom = 32.dp),
+            contentPadding = PaddingValues(bottom = 40.dp),
         ) {
             item(key = "appearance-header") {
                 SectionHeader(title = stringResource(R.string.settings_appearance))

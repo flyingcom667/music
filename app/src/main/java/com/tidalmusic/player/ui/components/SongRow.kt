@@ -10,9 +10,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
+import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -20,7 +29,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -50,6 +62,10 @@ fun SongRow(
     contentDescription: String? = null,
     leadingContent: (@Composable () -> Unit)? = null,
     trailingContent: (@Composable () -> Unit)? = null,
+    isSelected: Boolean = false,
+    selectionMode: Boolean = false,
+    selectionCheckedLabel: String? = null,
+    selectionUncheckedLabel: String? = null,
 ) {
     val rowHeight = if (compact) 60.dp else 76.dp
     val artworkSize = if (compact) 44.dp else 52.dp
@@ -64,17 +80,60 @@ fun SongRow(
             .fillMaxWidth()
             .defaultMinSize(minHeight = 48.dp)
             .height(rowHeight)
+            .then(
+                if (isSelected) {
+                    Modifier
+                        .padding(horizontal = 8.dp)
+                        .clip(MaterialTheme.shapes.medium)
+                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f))
+                        .padding(horizontal = 12.dp)
+                } else {
+                    Modifier.padding(horizontal = 20.dp)
+                },
+            )
+            .semantics {
+                if (selectionMode) {
+                    selected = isSelected
+                    contentDescription = if (isSelected) {
+                        selectionCheckedLabel ?: song.title
+                    } else {
+                        selectionUncheckedLabel ?: song.title
+                    }
+                }
+            }
             .combinedClickable(
                 onClick = onPlay,
                 onLongClick = onLongClick,
-            )
-            .padding(horizontal = 20.dp),
+            ),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         leadingContent?.invoke()
 
-        if (showArtwork) {
+        // In multi-select mode the checkbox replaces the artwork so it is unmistakably
+        // clear which items are checked.
+        AnimatedVisibility(
+            visible = selectionMode,
+            enter = fadeIn(tween(150)) + scaleIn(tween(150), initialScale = 0.8f),
+            exit = fadeOut(tween(150)) + scaleOut(tween(150), targetScale = 0.8f),
+        ) {
+            Icon(
+                imageVector = if (isSelected) {
+                    Icons.Rounded.CheckCircle
+                } else {
+                    Icons.Rounded.RadioButtonUnchecked
+                },
+                contentDescription = null,
+                tint = if (isSelected) {
+                    MaterialTheme.colorScheme.primary
+                } else {
+                    MaterialTheme.colorScheme.onSurfaceVariant
+                },
+                modifier = Modifier.size(24.dp),
+            )
+        }
+
+        if (showArtwork && !selectionMode) {
             AlbumArtwork(
                 song = song,
                 size = artworkSize,
