@@ -325,4 +325,9 @@
     <string name="playback_error_source_unavailable">The audio file is no longer available</string>
     <string name="playback_error_source_io">The audio file could not be read</string>
     <string name="playback_error_decode">This audio format is not supported</string>
+    <string name="library_add_n_to_playlist">Add %1$d to “%2$s”</string>
+    <string name="library_pick_songs_for_playlist">Pick songs for “%1$s”</string>
+    <string name="library_letter_rail">Jump to letter</string>
+    <string name="library_selected_count_short">%1$d checked</string>
+    <string name="playlist_songs_added_count">%1$d songs added to the playlist</string>
 </resources>

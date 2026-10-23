@@ -241,6 +241,9 @@ fun MusicApp(
     var showControlsSheet by remember { mutableStateOf(false) }
     var showSleepTimer by remember { mutableStateOf(false) }
     var showPlaylistPicker by remember { mutableStateOf(false) }
+    // "Add songs to playlist" sends the user to the Library screen in selection mode:
+    // they check the songs with the row checkboxes and confirm in the bottom bar.
+    var addToPlaylistTarget by remember { mutableStateOf<PlaylistSummary?>(null) }
     var showEditMetadata by remember { mutableStateOf(false) }
     var showCreatePlaylist by remember { mutableStateOf(false) }
     var renamePlaylist by remember { mutableStateOf<PlaylistSummary?>(null) }
@@ -684,7 +687,11 @@ fun MusicApp(
             onToggleFavorite = playerVm::toggleFavorite,
             onAddToPlaylist = {
                 showControlsSheet = false
-                showPlaylistPicker = true
+                val song = playbackState.currentSong
+                if (song != null) {
+                    addToPlaylistTarget = null
+                    showPlaylistPicker = true
+                }
             },
             onSongInfo = {
                 showControlsSheet = false
@@ -732,6 +739,7 @@ fun MusicApp(
             },
             onAddToPlaylist = {
                 songActionsVm.clearSelection()
+                addToPlaylistTarget = null
                 showPlaylistPicker = true
             },
             onToggleFavorite = { songActionsVm.toggleFavorite(song) },

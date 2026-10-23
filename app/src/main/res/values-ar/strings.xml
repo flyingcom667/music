@@ -320,4 +320,9 @@
     <string name="playback_error_source_unavailable">لم يعد الملف الصوتي متاحًا</string>
     <string name="playback_error_source_io">تعذّرت قراءة الملف الصوتي</string>
     <string name="playback_error_decode">هذه الصيغة الصوتية غير مدعومة</string>
+    <string name="library_add_n_to_playlist">أضف %1$d إلى “%2$s”</string>
+    <string name="library_pick_songs_for_playlist">حدد المقاطع لـ“%1$s”</string>
+    <string name="library_letter_rail">انتقال إلى حرف</string>
+    <string name="library_selected_count_short">%1$d محدد</string>
+    <string name="playlist_songs_added_count">تمت إضافة %1$d من المقاطع إلى قائمة التشغيل</string>
 </resources>
