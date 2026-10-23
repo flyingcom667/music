@@ -112,7 +112,10 @@ fun LibraryScreen(
     var selectionMode by rememberSaveable { mutableStateOf(false) }
     var selectedSongIds by rememberSaveable(
         stateSaver = object : androidx.compose.runtime.saveable.Saver<Set<Long>, List<Long>> {
-            override fun save(value: Set<Long>): List<Long> = value.toList()
+            override fun androidx.compose.runtime.saveable.SaverScope.save(
+                value: Set<Long>,
+            ): List<Long>? = value.toList()
+
             override fun restore(value: List<Long>): Set<Long> = value.toSet()
         },
         key = "library_selected_song_ids",

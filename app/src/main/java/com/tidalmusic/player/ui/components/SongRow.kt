@@ -94,7 +94,7 @@ fun SongRow(
             .semantics {
                 if (selectionMode) {
                     selected = isSelected
-                    contentDescription = if (isSelected) {
+                    this.contentDescription = if (isSelected) {
                         selectionCheckedLabel ?: song.title
                     } else {
                         selectionUncheckedLabel ?: song.title
