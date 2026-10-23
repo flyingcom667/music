@@ -249,7 +249,7 @@ fun PlaylistDetailScreen(
                 LazyColumn(
                     state = listState,
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(bottom = 24.dp),
+                    contentPadding = PaddingValues(bottom = 32.dp),
                 ) {
                     itemsIndexed(items = songs, key = { _, song -> song.id }) { index, song ->
                         SongRow(

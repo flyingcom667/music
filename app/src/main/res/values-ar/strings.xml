@@ -14,6 +14,8 @@
     <string name="library_remove_selected">إزالة المحدد من المكتبة</string>
     <string name="library_share_selected">مشاركة المحدد</string>
     <string name="library_select_songs">تحديد المقاطع</string>
+    <string name="library_selected_item">محدد</string>
+    <string name="library_not_selected_item">غير محدد</string>
     <string name="library_songs_removed">تمت إزالة %1$d من المكتبة</string>
     <string name="library_remove_failed">تعذرت إزالة المقاطع المحددة</string>
     <string name="delete_selected_done">تم حذف %1$d ملف صوتي</string>

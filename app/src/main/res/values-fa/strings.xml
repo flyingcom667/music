@@ -14,6 +14,8 @@
     <string name="library_remove_selected">حذف موارد انتخاب‌شده از کتابخانه</string>
     <string name="library_share_selected">اشتراک‌گذاری موارد انتخاب‌شده</string>
     <string name="library_select_songs">انتخاب آهنگ‌ها</string>
+    <string name="library_selected_item">انتخاب شد</string>
+    <string name="library_not_selected_item">انتخاب نشده</string>
     <string name="library_songs_removed">%1$d آهنگ از کتابخانه حذف شد</string>
     <string name="library_remove_failed">حذف آهنگ‌های انتخاب‌شده ممکن نبود</string>
     <string name="delete_selected_done">%1$d فایل صوتی حذف شد</string>

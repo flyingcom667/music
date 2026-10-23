@@ -15,6 +15,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.SystemBarStyle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
@@ -54,7 +55,20 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge(
+            // Android 15+ (API 35) enforces edge-to-edge: the system navigation bar — gesture
+            // pill or 3-button — is transparent and overlaps app content. Keeping both system
+            // bars fully transparent lets the Compose Scaffold consume the insets and place the
+            // bottom bar / mini-player cleanly above the buttons on every Android version.
+            statusBarStyle = SystemBarStyle.auto(
+                lightScrim = android.graphics.Color.TRANSPARENT,
+                darkScrim = android.graphics.Color.TRANSPARENT,
+            ),
+            navigationBarStyle = SystemBarStyle.auto(
+                lightScrim = android.graphics.Color.TRANSPARENT,
+                darkScrim = android.graphics.Color.TRANSPARENT,
+            ),
+        )
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             // The app draws its own bar at the bottom; a system scrim would make it look cut off.
             window.isNavigationBarContrastEnforced = false

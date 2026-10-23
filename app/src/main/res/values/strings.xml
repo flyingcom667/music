@@ -19,6 +19,8 @@
     <string name="library_remove_selected">Remove selected from library</string>
     <string name="library_share_selected">Share selected</string>
     <string name="library_select_songs">Select songs</string>
+    <string name="library_selected_item">Checked</string>
+    <string name="library_not_selected_item">Not checked</string>
     <string name="library_songs_removed">Removed %1$d songs from library</string>
     <string name="library_remove_failed">Could not remove selected songs</string>
     <string name="delete_selected_done">Deleted %1$d audio files</string>
