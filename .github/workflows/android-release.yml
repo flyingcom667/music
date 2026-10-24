@@ -1,17 +1,16 @@
 name: Android APK Release
 
-# Builds the signed release APKs for a pushed tag (e.g. v1.2.0) and publishes them
-# on a GitHub Release, so users can download them directly.
+# Builds the signed release APKs on Linux for a pushed tag (e.g. v1.2.3) and publishes
+# them on a GitHub Release so users can download them.
 #
-# Signing: the workflow expects these repository secrets (Settings → Secrets and
-# variables → Actions):
+# Signing expects these repository secrets (Settings → Secrets and variables → Actions):
 #   KEYSTORE_BASE64     - the release keystore, base64-encoded
-#                         (generate locally with: base64 -w0 keystore/tidalmusic-release.jks)
+#                         (create locally with: base64 -w0 keystore/tidalmusic-release.jks)
 #   KEYSTORE_PASSWORD   - the keystore password
 #   KEY_ALIAS           - the key alias (tidalmusic)
 #   KEY_PASSWORD        - the key password
-# When the secrets are missing the APKs are published unsigned and the release
-# notes say so.
+# When the secrets are missing the APKs are published unsigned and the run warns —
+# unsigned APKs do NOT install on Android, so set the secrets for real releases.
 
 on:
   push:
@@ -20,7 +19,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: Tag to create or publish (for example, v1.2.0)
+        description: Tag to create or publish (for example, v1.2.3)
         required: true
         type: string
 
@@ -30,6 +29,7 @@ permissions:
 jobs:
   build-and-release:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - name: Check out source
         uses: actions/checkout@v4
@@ -39,6 +39,7 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
+          cache: gradle
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -62,11 +63,11 @@ jobs:
             echo "SIGNED=true" >> "$GITHUB_ENV"
           else
             echo "SIGNED=false" >> "$GITHUB_ENV"
-            echo "::warning::KEYSTORE_* secrets are not set - publishing UNSIGNED APKs."
+            echo "::warning::KEYSTORE_* secrets are not set - publishing UNSIGNED APKs that will NOT install. Set the secrets and re-run."
           fi
 
       - name: Build release APKs
-        run: ./gradlew --no-daemon :app:assembleRelease
+        run: ./gradlew :app:assembleRelease --no-daemon --stacktrace
 
       - name: Prepare release files
         run: |
@@ -74,7 +75,7 @@ jobs:
           mkdir -p release-apks
           for abi in arm64-v8a armeabi-v7a universal; do
             src=$(ls app/build/outputs/apk/release/app-${abi}-release*.apk 2>/dev/null | head -1)
-            [ -n "$src" ] || { echo "missing APK for $abi"; exit 1; }
+            [ -n "$src" ] || { echo "::error::missing APK for $abi"; exit 1; }
             cp "$src" "release-apks/Audiofy-${TAG}-${abi}.apk"
           done
           ls -la release-apks/
@@ -92,3 +93,4 @@ jobs:
             - **Audiofy-*-universal.apk** — works on every device (larger download)
           generate_release_notes: true
           files: release-apks/*.apk
+          fail_on_unmatched_files: true
