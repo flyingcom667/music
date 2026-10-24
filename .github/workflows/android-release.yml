@@ -75,7 +75,7 @@ jobs:
           for abi in arm64-v8a armeabi-v7a universal; do
             src=$(ls app/build/outputs/apk/release/app-${abi}-release*.apk 2>/dev/null | head -1)
             [ -n "$src" ] || { echo "missing APK for $abi"; exit 1; }
-            cp "$src" "release-apks/TidalMusic-${TAG}-${abi}.apk"
+            cp "$src" "release-apks/Audiofy-${TAG}-${abi}.apk"
           done
           ls -la release-apks/
 
@@ -83,12 +83,12 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
-          name: Tidal Music ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
+          name: Audiofy ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}
           body: |
-            Installable APKs of Tidal Music ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}.
+            Installable APKs of Audiofy ${{ github.event_name == 'workflow_dispatch' && inputs.release_tag || github.ref_name }}.
 
-            - **TidalMusic-*-arm64-v8a.apk** — modern 64-bit phones (use this on almost every phone sold since ~2017)
-            - **TidalMusic-*-armeabi-v7a.apk** — older 32-bit phones
-            - **TidalMusic-*-universal.apk** — works on every device (larger download)
+            - **Audiofy-*-arm64-v8a.apk** — modern 64-bit phones (use this on almost every phone sold since ~2017)
+            - **Audiofy-*-armeabi-v7a.apk** — older 32-bit phones
+            - **Audiofy-*-universal.apk** — works on every device (larger download)
           generate_release_notes: true
           files: release-apks/*.apk
