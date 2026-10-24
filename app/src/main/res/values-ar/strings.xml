@@ -228,7 +228,7 @@
     <string name="settings_rescan">إعادة فحص مكتبة الموسيقى</string>
     <string name="settings_rescan_summary">البحث عن ملفات صوتية جديدة أو معدّلة</string>
     <string name="settings_include_non_music">إظهار الصوت غير الموسيقي</string>
-    <string name="settings_include_non_music_summary">يشمل النغمات والإشعارات والبودكاست</string>
+    <string name="settings_include_non_music_summary">اعثر أيضًا على نغمات الرنين والإشعارات والرسائل الصوتية من تطبيقات الدردشة والتسجيلات</string>
     <string name="settings_show_artwork">إظهار صور الألبومات</string>
     <string name="settings_show_artwork_summary">أوقفه لتسريع التمرير في المكتبات الكبيرة</string>
     <string name="settings_default_sort">ترتيب الفرز الافتراضي</string>
@@ -331,4 +331,20 @@
     <string name="duration_hours">%1$d س</string>
     <string name="duration_minutes">%1$d د</string>
     <string name="duration_zero_minutes">0 د</string>
+    <string name="view_mode_list">عرض القائمة</string>
+    <string name="view_mode_cover">عرض الأغلفة</string>
+    <string name="playlist_share_empty_title">قائمة التشغيل فارغة</string>
+    <string name="playlist_share_empty_body">أضف بعض المقاطع إلى “%1$s” أولاً ثم يمكنك مشاركتها.</string>
+    <string name="delete_file_body_with_size">سيتم حذف الملف “%1$s” ‏(%2$s) نهائيًا من هذا الجهاز. لا يمكن التراجع عن هذا الإجراء.</string>
+    <string name="folders_title">المجلدات</string>
+    <string name="folders_empty_title">لا توجد مجلدات</string>
+    <string name="folders_empty_body">تظهر المقاطع هنا مجمّعة حسب المجلد الذي تُخزَّن فيه.</string>
+    <string name="folders_song_count">%1$d مقاطع</string>
+    <string name="folders_selected_count">تم تحديد %1$d من المجلدات</string>
+    <string name="folder_info_title">تفاصيل المجلد</string>
+    <string name="folder_info_menu">معلومات المجلد</string>
+    <string name="folder_info_name">الاسم</string>
+    <string name="folder_info_path">المسار</string>
+    <string name="folder_info_count">المقاطع</string>
+    <string name="folder_info_size">الحجم</string>
 </resources>

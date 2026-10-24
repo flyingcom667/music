@@ -31,8 +31,10 @@ import androidx.compose.material.icons.automirrored.rounded.Sort
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Clear
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.LibraryMusic
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.ViewList
 import androidx.compose.material.icons.rounded.SelectAll
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.RemoveCircleOutline
@@ -77,6 +79,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.tidalmusic.player.R
 import com.tidalmusic.player.data.preferences.ListDensity
+import com.tidalmusic.player.data.preferences.ViewMode
 import com.tidalmusic.player.domain.model.Song
 import com.tidalmusic.player.domain.model.SortDirection
 import com.tidalmusic.player.domain.model.SortOrder
@@ -86,6 +89,7 @@ import com.tidalmusic.player.ui.components.EmptyState
 import com.tidalmusic.player.ui.components.ErrorState
 import com.tidalmusic.player.ui.components.InlineLoadingRow
 import com.tidalmusic.player.ui.components.LoadingState
+import com.tidalmusic.player.ui.components.SongGrid
 import com.tidalmusic.player.ui.components.SongRow
 import com.tidalmusic.player.ui.components.TidalTextButton
 import com.tidalmusic.player.ui.viewmodel.LibraryStatus
@@ -107,6 +111,8 @@ fun LibraryScreen(
     isPlaying: Boolean,
     density: ListDensity,
     showArtwork: Boolean,
+    viewMode: ViewMode,
+    onViewModeChange: (ViewMode) -> Unit,
     onQueryChange: (String) -> Unit,
     onClearQuery: () -> Unit,
     onSortClick: () -> Unit,
@@ -126,7 +132,7 @@ fun LibraryScreen(
     onExitAddMode: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var selectedTab by rememberSaveable { mutableIntStateOf(1) }
+    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
     var searchExpanded by remember { mutableStateOf(false) }
     // Entering the add-to-playlist flow switches the screen into selection mode so the
     // user can immediately start ticking songs.
@@ -135,7 +141,7 @@ fun LibraryScreen(
     LaunchedEffect(addPlaylistName) {
         if (addPlaylistName != null) {
             selectionMode = true
-            selectedTab = 1
+            selectedTab = 0
             listState.scrollToItem(0)
         }
     }
@@ -206,7 +212,7 @@ fun LibraryScreen(
         }
     }
 
-    val songs = if (selectedTab == 1) state.songs else state.recentlyAdded
+    val songs = if (selectedTab == 0) state.songs else state.recentlyAdded
     val titleHiddenByScroll by remember(listState) {
         derivedStateOf {
             listState.firstVisibleItemIndex > 0
@@ -355,6 +361,24 @@ fun LibraryScreen(
                     Spacer(Modifier.weight(1f))
                 }
                 IconButton(
+                    onClick = {
+                        onViewModeChange(if (viewMode == ViewMode.LIST) ViewMode.COVER else ViewMode.LIST)
+                    },
+                    modifier = Modifier.size(48.dp),
+                ) {
+                    Icon(
+                        imageVector = if (viewMode == ViewMode.LIST) {
+                            Icons.Rounded.GridView
+                        } else {
+                            Icons.Rounded.ViewList
+                        },
+                        contentDescription = stringResource(
+                            if (viewMode == ViewMode.LIST) R.string.view_mode_cover else R.string.view_mode_list,
+                        ),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                IconButton(
                     onClick = { searchExpanded = !searchExpanded },
                     modifier = Modifier.size(48.dp),
                 ) {
@@ -407,7 +431,7 @@ fun LibraryScreen(
                     focusManager.clearFocus()
                     keyboardController?.hide()
                 },
-                text = { Text(stringResource(R.string.library_tab_recently_added)) },
+                text = { Text(stringResource(R.string.library_tab_all_songs)) },
             )
             Tab(
                 selected = selectedTab == 1,
@@ -417,7 +441,7 @@ fun LibraryScreen(
                     focusManager.clearFocus()
                     keyboardController?.hide()
                 },
-                text = { Text(stringResource(R.string.library_tab_all_songs)) },
+                text = { Text(stringResource(R.string.library_tab_recently_added)) },
             )
         }
 
@@ -491,48 +515,70 @@ fun LibraryScreen(
                 if (state.isRefreshing) {
                     InlineLoadingRow(label = stringResource(R.string.library_refreshing))
                 }
-                Box(modifier = Modifier.fillMaxSize()) {
-                    LazyColumn(
-                        state = listState,
+                if (viewMode == ViewMode.COVER) {
+                    SongGrid(
+                        songs = songs,
+                        currentSongId = currentSongId,
+                        isPlaying = isPlaying,
+                        isSelected = { it in selectedSongIds },
+                        selectionMode = selectionMode,
+                        onPlay = { index -> onPlay(songs, index) },
+                        onToggleSelect = { id ->
+                            selectedSongIds = if (id in selectedSongIds) {
+                                selectedSongIds - id
+                            } else {
+                                selectedSongIds + id
+                            }
+                        },
+                        onEnterSelection = { selectionMode = true },
+                        onOverflow = onSongOverflow,
                         modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(
-                            top = 4.dp,
-                            bottom = 32.dp,
-                        ),
-                    ) {
-                        itemsIndexed(items = songs, key = { _, song -> song.id }) { index, song ->
-                            val checked = song.id in selectedSongIds
-                            SongRow(
-                                song = song,
-                                isCurrent = song.id == currentSongId,
-                                isPlaying = isPlaying,
-                                isFavorite = song.id in state.favorites,
-                                showArtwork = showArtwork,
-                                compact = density == ListDensity.COMPACT,
-                                isSelected = checked,
-                                selectionMode = selectionMode,
-                                selectionCheckedLabel = stringResource(R.string.library_selected_item),
-                                selectionUncheckedLabel = stringResource(R.string.library_not_selected_item),
-                                onPlay = {
-                                    if (selectionMode) {
-                                        selectedSongIds = if (song.id in selectedSongIds) {
-                                            selectedSongIds - song.id
+                        contentPadding = PaddingValues(top = 4.dp, bottom = 32.dp),
+                    )
+                } else {
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxSize(),
+                            contentPadding = PaddingValues(
+                                top = 4.dp,
+                                bottom = 32.dp,
+                            ),
+                        ) {
+                            itemsIndexed(items = songs, key = { _, song -> song.id }) { index, song ->
+                                val checked = song.id in selectedSongIds
+                                SongRow(
+                                    song = song,
+                                    isCurrent = song.id == currentSongId,
+                                    isPlaying = isPlaying,
+                                    isFavorite = song.id in state.favorites,
+                                    showArtwork = showArtwork,
+                                    compact = density == ListDensity.COMPACT,
+                                    isSelected = checked,
+                                    selectionMode = selectionMode,
+                                    selectionCheckedLabel = stringResource(R.string.library_selected_item),
+                                    selectionUncheckedLabel = stringResource(R.string.library_not_selected_item),
+                                    onPlay = {
+                                        if (selectionMode) {
+                                            selectedSongIds = if (song.id in selectedSongIds) {
+                                                selectedSongIds - song.id
+                                            } else {
+                                                selectedSongIds + song.id
+                                            }
                                         } else {
-                                            selectedSongIds + song.id
+                                            onPlay(songs, index)
                                         }
-                                    } else {
-                                        onPlay(songs, index)
-                                    }
-                                },
-                                onLongClick = {
-                                    if (!selectionMode) {
-                                        selectionMode = true
-                                    }
-                                    selectedSongIds = selectedSongIds + song.id
-                                },
-                                onOverflow = { onSongOverflow(song) },
-                                overflowLabel = stringResource(R.string.action_more_options),
-                            )
+                                    },
+                                    onLongClick = {
+                                        if (!selectionMode) {
+                                            selectionMode = true
+                                        }
+                                        selectedSongIds = selectedSongIds + song.id
+                                    },
+                                    onOverflow = { onSongOverflow(song) },
+                                    overflowLabel = stringResource(R.string.action_more_options),
+                                )
+                            }
                         }
                     }
                 }

@@ -23,6 +23,7 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DriveFileRenameOutline
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
@@ -72,6 +73,7 @@ fun PlaylistDetailScreen(
     onPlayAll: () -> Unit,
     onShuffle: () -> Unit,
     onAddSongs: () -> Unit,
+    onShare: () -> Unit,
     onPlaySong: (Int) -> Unit,
     onRemoveSong: (Long) -> Unit,
     onMoveSong: (Int, Int) -> Unit,
@@ -227,6 +229,17 @@ fun PlaylistDetailScreen(
                     )
                     Text(
                         text = stringResource(R.string.playlist_add_songs),
+                        modifier = Modifier.padding(start = 8.dp),
+                    )
+                }
+                TidalTextButton(onClick = onShare) {
+                    Icon(
+                        imageVector = Icons.Rounded.Share,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Text(
+                        text = stringResource(R.string.action_share),
                         modifier = Modifier.padding(start = 8.dp),
                     )
                 }

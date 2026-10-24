@@ -37,6 +37,8 @@ fun PlaylistDetailRoute(
     onAddSongs: (PlaylistSummary) -> Unit,
     onRenamePlaylist: (PlaylistSummary) -> Unit,
     onDeletePlaylist: (PlaylistSummary) -> Unit,
+    onSharePlaylistSongs: (List<Song>) -> Unit,
+    onShareEmptyPlaylist: (PlaylistSummary) -> Unit,
     onSongOverflow: (Song) -> Unit,
 ) {
     val viewModel: PlaylistDetailViewModel = viewModel(
@@ -69,6 +71,14 @@ fun PlaylistDetailRoute(
         onPlayAll = { if (songs.isNotEmpty()) onPlay(songs, 0) },
         onShuffle = { onShuffle(songs) },
         onAddSongs = { playlist?.let(onAddSongs) },
+        onShare = {
+            val summary = playlist ?: return@PlaylistDetailScreen
+            if (songs.isEmpty()) {
+                onShareEmptyPlaylist(summary)
+            } else {
+                onSharePlaylistSongs(songs)
+            }
+        },
         onPlaySong = { index -> onPlay(songs, index) },
         onRemoveSong = { songId -> viewModel.removeSong(songId) },
         onMoveSong = { from, to -> viewModel.move(from, to) },

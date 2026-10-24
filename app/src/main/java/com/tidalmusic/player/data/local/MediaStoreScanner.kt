@@ -63,6 +63,13 @@ class MediaStoreScanner(private val context: Context) {
             add(MediaStore.Audio.Media.DATE_MODIFIED)
             add(MediaStore.Audio.Media.MIME_TYPE)
             add(MediaStore.Audio.Media.DISPLAY_NAME)
+            // The folder the file lives in (Android 10+); on older versions the full
+            // path column is read and trimmed to the parent directory below.
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                add(MediaStore.Audio.Media.RELATIVE_PATH)
+            } else {
+                add(MediaStore.Audio.Media.DATA)
+            }
         }.toTypedArray()
 
         val songs = mutableListOf<Song>()
@@ -90,11 +97,26 @@ class MediaStoreScanner(private val context: Context) {
                 val dateModifiedCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATE_MODIFIED)
                 val mimeCol = cursor.getColumnIndex(MediaStore.Audio.Media.MIME_TYPE)
                 val nameCol = cursor.getColumnIndex(MediaStore.Audio.Media.DISPLAY_NAME)
+                val pathCol = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                    cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.RELATIVE_PATH)
+                } else {
+                    cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA)
+                }
 
                 var loaded = 0
                 while (cursor.moveToNext()) {
                     val id = cursor.getLong(idCol)
                     val displayName = nameCol.takeIf { it >= 0 }?.let { cursor.getString(it) }.orEmpty()
+                    val relativePath = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                        cursor.getString(pathCol).orEmpty().trimEnd('/')
+                    } else {
+                        // Pre-Q exposes the absolute file path; keep only the parent directory.
+                        cursor.getString(pathCol)
+                            ?.substringBeforeLast('/', "")
+                            ?.substringAfter("/storage/emulated/0", "")
+                            .orEmpty()
+                            .trimEnd('/')
+                    }
                     songs += Song(
                         id = id,
                         contentUri = ContentUris.withAppendedId(collection, id).toString(),
@@ -111,6 +133,7 @@ class MediaStoreScanner(private val context: Context) {
                         displayName = displayName,
                         mimeType = mimeCol.takeIf { it >= 0 }?.let { cursor.getString(it) },
                         albumId = cursor.getLong(albumIdCol),
+                        relativePath = relativePath,
                     )
                     loaded++
                     if (loaded % BATCH_SIZE == 0) {

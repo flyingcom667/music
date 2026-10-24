@@ -233,7 +233,7 @@
     <string name="settings_rescan">Rescan music library</string>
     <string name="settings_rescan_summary">Look for new or changed audio files</string>
     <string name="settings_include_non_music">Show non-music audio</string>
-    <string name="settings_include_non_music_summary">Include ringtones, notifications and podcasts</string>
+    <string name="settings_include_non_music_summary">Also find ringtones, notifications, voice messages from chat apps and recordings</string>
     <string name="settings_show_artwork">Show album artwork</string>
     <string name="settings_show_artwork_summary">Turn off to speed up scrolling on large libraries</string>
     <string name="settings_default_sort">Default sort order</string>
@@ -336,4 +336,20 @@
     <string name="duration_hours">%1$d h</string>
     <string name="duration_minutes">%1$d min</string>
     <string name="duration_zero_minutes">0 min</string>
+    <string name="view_mode_list">List view</string>
+    <string name="view_mode_cover">Cover grid view</string>
+    <string name="playlist_share_empty_title">Playlist is empty</string>
+    <string name="playlist_share_empty_body">Add some songs to “%1$s” first, then you can share it.</string>
+    <string name="delete_file_body_with_size">The file “%1$s” (%2$s) will be permanently removed from this device. This cannot be undone.</string>
+    <string name="folders_title">Folders</string>
+    <string name="folders_empty_title">No folders found</string>
+    <string name="folders_empty_body">Songs appear here grouped by the folder they are stored in.</string>
+    <string name="folders_song_count">%1$d songs</string>
+    <string name="folders_selected_count">%1$d folders selected</string>
+    <string name="folder_info_title">Folder details</string>
+    <string name="folder_info_menu">Folder info</string>
+    <string name="folder_info_name">Name</string>
+    <string name="folder_info_path">Path</string>
+    <string name="folder_info_count">Songs</string>
+    <string name="folder_info_size">Size</string>
 </resources>

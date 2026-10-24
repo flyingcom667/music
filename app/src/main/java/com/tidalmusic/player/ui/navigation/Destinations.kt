@@ -26,6 +26,9 @@ object Routes {
     const val SEARCH = "search"
     const val QUEUE = "queue"
 
+    /** The built-in mini file manager: folders that contain songs. */
+    const val FOLDERS = "folders"
+
     /** A playlist detail screen; the id is a path argument. */
     const val PLAYLIST_DETAIL = "playlist/{playlistId}"
     const val PLAYLIST_ID_ARG = "playlistId"

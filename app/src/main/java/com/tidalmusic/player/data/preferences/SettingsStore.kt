@@ -36,4 +36,11 @@ interface SettingsStore {
     suspend fun setShowArtwork(enabled: Boolean)
 
     suspend fun setDefaultSort(order: SortOrder, direction: SortDirection)
+
+    /** Per-screen song layout: a detailed list or a cover grid. Each screen remembers its own. */
+    suspend fun setViewModeLibrary(mode: ViewMode)
+
+    suspend fun setViewModeHome(mode: ViewMode)
+
+    suspend fun setViewModeFolders(mode: ViewMode)
 }

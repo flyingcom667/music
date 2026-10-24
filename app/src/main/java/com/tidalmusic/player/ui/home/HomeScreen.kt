@@ -1,7 +1,7 @@
 package com.tidalmusic.player.ui.home
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +17,11 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.ViewList
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,16 +34,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tidalmusic.player.R
+import com.tidalmusic.player.data.preferences.ViewMode
 import com.tidalmusic.player.domain.model.Song
 import com.tidalmusic.player.ui.components.AlbumArtwork
 import com.tidalmusic.player.ui.components.EmptyState
 import com.tidalmusic.player.ui.components.NowPlayingBars
+import com.tidalmusic.player.ui.components.SongRow
 import com.tidalmusic.player.ui.components.SectionHeader
 
 /**
  * The Home screen: identity, a one-line library summary and the recently played music.
  *
  * Only playback history is listed here; library browsing is kept on the Library screen.
+ * The home list has its own view mode (cover carousel or compact rows), independent of
+ * the library's choice.
  */
 @Composable
 fun HomeScreen(
@@ -51,8 +57,12 @@ fun HomeScreen(
     currentSongId: Long?,
     isPlaying: Boolean,
     hasPermission: Boolean,
+    viewMode: ViewMode,
+    onViewModeChange: (ViewMode) -> Unit,
     onPlayRecent: (Song) -> Unit,
     onPlayFavorite: (Song) -> Unit,
+    onSongLongPress: (Song) -> Unit,
+    onSongOverflow: (Song) -> Unit,
     onOpenSearch: () -> Unit,
     onOpenSettings: () -> Unit,
     onBrowseLibrary: () -> Unit,
@@ -68,6 +78,8 @@ fun HomeScreen(
         item(key = "header") {
             HomeHeader(
                 librarySummary = librarySummary,
+                viewMode = viewMode,
+                onViewModeChange = onViewModeChange,
                 onOpenSearch = onOpenSearch,
                 onOpenSettings = onOpenSettings,
             )
@@ -121,21 +133,29 @@ fun HomeScreen(
             item(key = "recent-header") {
                 SectionHeader(title = stringResource(R.string.home_recently_played))
             }
-            item(key = "carousel") {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    itemsIndexed(
-                        items = recentSongs.take(12),
-                        key = { _, song -> song.id },
-                    ) { _, song ->
-                        RecentArtworkCard(
-                            song = song,
-                            isCurrent = song.id == currentSongId && isPlaying,
-                            onClick = { onPlayRecent(song) },
-                        )
-                    }
+            if (viewMode == ViewMode.COVER) {
+                item(key = "recent-carousel") {
+                    SongCarousel(
+                        songs = recentSongs,
+                        currentSongId = currentSongId,
+                        isPlaying = isPlaying,
+                        onPlay = onPlayRecent,
+                        onSongLongPress = onSongLongPress,
+                    )
+                }
+            } else {
+                itemsIndexed(
+                    items = recentSongs.take(12),
+                    key = { _, song -> "recent-${song.id}" },
+                ) { _, song ->
+                    HomeSongRow(
+                        song = song,
+                        currentSongId = currentSongId,
+                        isPlaying = isPlaying,
+                        onPlay = { onPlayRecent(song) },
+                        onSongLongPress = onSongLongPress,
+                        onSongOverflow = onSongOverflow,
+                    )
                 }
             }
         }
@@ -144,21 +164,29 @@ fun HomeScreen(
             item(key = "favorite-header") {
                 SectionHeader(title = stringResource(R.string.home_favorite_songs))
             }
-            item(key = "favorites") {
-                LazyRow(
-                    contentPadding = PaddingValues(horizontal = 20.dp),
-                    horizontalArrangement = Arrangement.spacedBy(14.dp),
-                ) {
-                    itemsIndexed(
-                        items = favoriteSongs.take(12),
-                        key = { _, song -> song.id },
-                    ) { _, song ->
-                        RecentArtworkCard(
-                            song = song,
-                            isCurrent = song.id == currentSongId && isPlaying,
-                            onClick = { onPlayFavorite(song) },
-                        )
-                    }
+            if (viewMode == ViewMode.COVER) {
+                item(key = "favorite-carousel") {
+                    SongCarousel(
+                        songs = favoriteSongs,
+                        currentSongId = currentSongId,
+                        isPlaying = isPlaying,
+                        onPlay = onPlayFavorite,
+                        onSongLongPress = onSongLongPress,
+                    )
+                }
+            } else {
+                itemsIndexed(
+                    items = favoriteSongs.take(12),
+                    key = { _, song -> "favorite-${song.id}" },
+                ) { _, song ->
+                    HomeSongRow(
+                        song = song,
+                        currentSongId = currentSongId,
+                        isPlaying = isPlaying,
+                        onPlay = { onPlayFavorite(song) },
+                        onSongLongPress = onSongLongPress,
+                        onSongOverflow = onSongOverflow,
+                    )
                 }
             }
         }
@@ -166,8 +194,60 @@ fun HomeScreen(
 }
 
 @Composable
+private fun SongCarousel(
+    songs: List<Song>,
+    currentSongId: Long?,
+    isPlaying: Boolean,
+    onPlay: (Song) -> Unit,
+    onSongLongPress: (Song) -> Unit,
+) {
+    LazyRow(
+        contentPadding = PaddingValues(horizontal = 20.dp),
+        horizontalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        itemsIndexed(
+            items = songs.take(12),
+            key = { _, song -> song.id },
+        ) { _, song ->
+            RecentArtworkCard(
+                song = song,
+                isCurrent = song.id == currentSongId && isPlaying,
+                onClick = { onPlay(song) },
+                onLongClick = { onSongLongPress(song) },
+            )
+        }
+    }
+}
+
+/** One home list row, wired to the shared song actions like the library rows. */
+@Composable
+private fun HomeSongRow(
+    song: Song,
+    currentSongId: Long?,
+    isPlaying: Boolean,
+    onPlay: () -> Unit,
+    onSongLongPress: (Song) -> Unit,
+    onSongOverflow: (Song) -> Unit,
+) {
+    SongRow(
+        song = song,
+        isCurrent = song.id == currentSongId,
+        isPlaying = isPlaying,
+        isFavorite = false,
+        showArtwork = true,
+        compact = false,
+        onPlay = onPlay,
+        onLongClick = { onSongLongPress(song) },
+        onOverflow = { onSongOverflow(song) },
+        overflowLabel = stringResource(R.string.action_more_options),
+    )
+}
+
+@Composable
 private fun HomeHeader(
     librarySummary: String,
+    viewMode: ViewMode,
+    onViewModeChange: (ViewMode) -> Unit,
     onOpenSearch: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
@@ -196,6 +276,18 @@ private fun HomeHeader(
                 overflow = TextOverflow.Ellipsis,
             )
         }
+        IconButton(
+            onClick = { onViewModeChange(if (viewMode == ViewMode.LIST) ViewMode.COVER else ViewMode.LIST) },
+            modifier = Modifier.size(48.dp),
+        ) {
+            Icon(
+                imageVector = if (viewMode == ViewMode.LIST) Icons.Rounded.GridView else Icons.Rounded.ViewList,
+                contentDescription = stringResource(
+                    if (viewMode == ViewMode.LIST) R.string.view_mode_cover else R.string.view_mode_list,
+                ),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         IconButton(onClick = onOpenSearch, modifier = Modifier.size(48.dp)) {
             Icon(
                 imageVector = Icons.Rounded.Search,
@@ -218,11 +310,12 @@ private fun RecentArtworkCard(
     song: Song,
     isCurrent: Boolean,
     onClick: () -> Unit,
+    onLongClick: () -> Unit,
 ) {
     Column(
         modifier = Modifier
             .width(148.dp)
-            .clickable(onClick = onClick),
+            .combinedClickable(onClick = onClick, onLongClick = onLongClick),
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         Box {

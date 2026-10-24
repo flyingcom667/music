@@ -21,6 +21,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
@@ -69,6 +71,7 @@ import com.tidalmusic.player.ui.components.SleepTimerDialog
 import com.tidalmusic.player.ui.components.SongActionSheet
 import com.tidalmusic.player.ui.components.SongDetailsDialog
 import com.tidalmusic.player.ui.components.TidalTextButton
+import com.tidalmusic.player.ui.folders.FoldersScreen
 import com.tidalmusic.player.ui.home.HomeScreen
 import com.tidalmusic.player.ui.library.LibraryScreen
 import com.tidalmusic.player.ui.library.SortDialog
@@ -88,6 +91,7 @@ import com.tidalmusic.player.ui.viewmodel.PlaylistsViewModel
 import com.tidalmusic.player.ui.viewmodel.PlayerViewModel
 import com.tidalmusic.player.ui.viewmodel.SettingsViewModel
 import com.tidalmusic.player.ui.viewmodel.SongActionsViewModel
+import com.tidalmusic.player.util.TimeFormat
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -245,6 +249,7 @@ fun MusicApp(
     var showCreatePlaylist by remember { mutableStateOf(false) }
     var renamePlaylist by remember { mutableStateOf<PlaylistSummary?>(null) }
     var deletePlaylist by remember { mutableStateOf<PlaylistSummary?>(null) }
+    var shareEmptyPlaylist by remember { mutableStateOf<PlaylistSummary?>(null) }
     var externalPreviewSong by remember { mutableStateOf<Song?>(null) }
     var externalPlaybackSnapshot by remember { mutableStateOf<ExternalPlaybackSnapshot?>(null) }
     var deleteSongConfirmation by remember { mutableStateOf<Song?>(null) }
@@ -439,7 +444,13 @@ fun MusicApp(
                 .fillMaxSize()
                 .padding(padding),
             enterTransition = {
-                fadeIn(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
+                if (targetState.destination.route == Routes.PLAYER) {
+                    slideInVertically(
+                        animationSpec = tween(MotionTokens.PlayerTransitionMs),
+                    ) { it } + fadeIn(animationSpec = tween(MotionTokens.PlayerTransitionMs))
+                } else {
+                    fadeIn(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
+                }
             },
             exitTransition = {
                 fadeOut(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
@@ -448,7 +459,13 @@ fun MusicApp(
                 fadeIn(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
             },
             popExitTransition = {
-                fadeOut(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
+                if (initialState.destination.route == Routes.PLAYER) {
+                    slideOutVertically(
+                        animationSpec = tween(MotionTokens.PlayerTransitionMs),
+                    ) { it } + fadeOut(animationSpec = tween(MotionTokens.PlayerTransitionMs))
+                } else {
+                    fadeOut(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
+                }
             },
         ) {
             composable(TopLevelDestination.HOME.route) {
@@ -466,6 +483,10 @@ fun MusicApp(
                     currentSongId = playbackState.currentSong?.id,
                     isPlaying = playbackState.isPlaying,
                     hasPermission = hasPermission,
+                    viewMode = settings.viewModeHome,
+                    onViewModeChange = settingsVm::setViewModeHome,
+                    onSongLongPress = songActionsVm::select,
+                    onSongOverflow = songActionsVm::select,
                     onPlayRecent = { song ->
                         val songs = libraryState.recentlyPlayed
                         val index = songs.indexOfFirst { it.id == song.id }
@@ -493,6 +514,8 @@ fun MusicApp(
                     isPlaying = playbackState.isPlaying,
                     density = settings.density,
                     showArtwork = settings.showArtwork,
+                    viewMode = settings.viewModeLibrary,
+                    onViewModeChange = settingsVm::setViewModeLibrary,
                     onQueryChange = libraryVm::onQueryChange,
                     onClearQuery = libraryVm::clearQuery,
                     onSortClick = { showSortDialog = true },
@@ -540,6 +563,26 @@ fun MusicApp(
                     onCreatePlaylist = { showCreatePlaylist = true },
                     onRenamePlaylist = { renamePlaylist = it },
                     onDeletePlaylist = { deletePlaylist = it },
+                    onSharePlaylist = { playlist ->
+                        val songs = playlist.songIds.mapNotNull { libraryState.allSongs[it] }
+                        if (songs.isEmpty()) shareEmptyPlaylist = playlist else shareSongs(songs)
+                    },
+                    onOpenFolders = { navController.navigate(Routes.FOLDERS) },
+                )
+            }
+
+            composable(Routes.FOLDERS) {
+                FoldersScreen(
+                    songs = libraryState.allSongs.values.toList(),
+                    currentSongId = playbackState.currentSong?.id,
+                    isPlaying = playbackState.isPlaying,
+                    viewMode = settings.viewModeFolders,
+                    onViewModeChange = settingsVm::setViewModeFolders,
+                    onBack = { navController.popBackStack() },
+                    onPlaySongs = { songs, index -> playerVm.playSongs(songs, index) },
+                    onShareSongs = shareSongs,
+                    onDeleteSongs = ::requestDeleteSongs,
+                    onSongOverflow = songActionsVm::select,
                 )
             }
 
@@ -566,6 +609,8 @@ fun MusicApp(
                     },
                     onRenamePlaylist = { renamePlaylist = it },
                     onDeletePlaylist = { deletePlaylist = it },
+                    onSharePlaylistSongs = shareSongs,
+                    onShareEmptyPlaylist = { shareEmptyPlaylist = it },
                     onSongOverflow = songActionsVm::select,
                 )
             }
@@ -759,7 +804,15 @@ fun MusicApp(
         AlertDialog(
             onDismissRequest = { deleteSongConfirmation = null },
             title = { Text(context.getString(R.string.delete_file_title, song.title)) },
-            text = { Text(stringResource(R.string.delete_file_body)) },
+            text = {
+                Text(
+                    stringResource(
+                        R.string.delete_file_body_with_size,
+                        song.title,
+                        TimeFormat.fileSize(song.sizeBytes),
+                    ),
+                )
+            },
             confirmButton = {
                 TidalTextButton(
                     onClick = {
@@ -872,6 +925,31 @@ fun MusicApp(
         )
     }
 
+    shareEmptyPlaylist?.let { playlist ->
+        AlertDialog(
+            onDismissRequest = { shareEmptyPlaylist = null },
+            title = { Text(stringResource(R.string.playlist_share_empty_title)) },
+            text = { Text(stringResource(R.string.playlist_share_empty_body, playlist.name)) },
+            confirmButton = {
+                TidalTextButton(
+                    onClick = {
+                        shareEmptyPlaylist = null
+                        addToPlaylistTarget = playlist
+                        openLibrarySearch = false
+                        navigateToTopLevel(TopLevelDestination.LIBRARY.route)
+                    },
+                ) {
+                    Text(stringResource(R.string.playlist_add_songs))
+                }
+            },
+            dismissButton = {
+                TidalTextButton(onClick = { shareEmptyPlaylist = null }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            },
+        )
+    }
+
     externalPreviewSong?.let { song ->
         val externalProgress by playerVm.progress.collectAsStateWithLifecycle()
         ExternalPlaybackDialog(
@@ -945,6 +1023,7 @@ fun MusicApp(
         selectedSong != null ||
         detailsSong != null ||
         deleteSongConfirmation != null ||
+        shareEmptyPlaylist != null ||
         externalPreviewSong != null ||
         externalAudioUnavailable ||
         showAudioRouteWarning

@@ -6,6 +6,7 @@ import com.tidalmusic.player.data.preferences.AppPreferences
 import com.tidalmusic.player.data.preferences.SettingsStore
 import com.tidalmusic.player.data.preferences.ListDensity
 import com.tidalmusic.player.data.preferences.ThemeMode
+import com.tidalmusic.player.data.preferences.ViewMode
 import com.tidalmusic.player.data.repository.LibraryRepository
 import com.tidalmusic.player.data.repository.UserLibraryRepository
 import com.tidalmusic.player.domain.model.SortOrder
@@ -75,6 +76,12 @@ class SettingsViewModel(
     fun setArtworkAnimation(enabled: Boolean) = launch { preferences.setArtworkAnimation(enabled) }
 
     fun setDensity(density: ListDensity) = launch { preferences.setDensity(density) }
+
+    fun setViewModeLibrary(mode: ViewMode) = launch { preferences.setViewModeLibrary(mode) }
+
+    fun setViewModeHome(mode: ViewMode) = launch { preferences.setViewModeHome(mode) }
+
+    fun setViewModeFolders(mode: ViewMode) = launch { preferences.setViewModeFolders(mode) }
 
     // ------------------------------------------------------------------ playback
 

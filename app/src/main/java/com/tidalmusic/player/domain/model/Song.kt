@@ -42,6 +42,7 @@ data class Song(
     val displayName: String,
     val mimeType: String?,
     val albumId: Long = id,
+    val relativePath: String = "",
 ) {
     /** The parsed [contentUri]; the only place where the Android URI type is needed. */
     val uri: Uri get() = Uri.parse(contentUri)

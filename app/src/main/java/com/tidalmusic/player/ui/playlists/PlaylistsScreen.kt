@@ -18,6 +18,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material.icons.rounded.DriveFileRenameOutline
+import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.AlertDialog
@@ -67,6 +69,8 @@ fun PlaylistsScreen(
     onCreatePlaylist: () -> Unit,
     onRenamePlaylist: (PlaylistSummary) -> Unit,
     onDeletePlaylist: (PlaylistSummary) -> Unit,
+    onSharePlaylist: (PlaylistSummary) -> Unit,
+    onOpenFolders: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Scaffold(
@@ -75,6 +79,16 @@ fun PlaylistsScreen(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.playlists_title)) },
+                actions = {
+                    // The mini file manager lives one tap away from the playlists.
+                    IconButton(onClick = onOpenFolders, modifier = Modifier.size(48.dp)) {
+                        Icon(
+                            imageVector = Icons.Rounded.Folder,
+                            contentDescription = stringResource(R.string.folders_title),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background,
                     titleContentColor = MaterialTheme.colorScheme.onBackground,
@@ -122,6 +136,7 @@ fun PlaylistsScreen(
                         onClick = { onOpenPlaylist(playlist.id) },
                         onRename = { onRenamePlaylist(playlist) },
                         onDelete = { onDeletePlaylist(playlist) },
+                        onShare = { onSharePlaylist(playlist) },
                     )
                 }
             }
@@ -137,6 +152,7 @@ private fun PlaylistCard(
     onClick: () -> Unit,
     onRename: () -> Unit,
     onDelete: () -> Unit,
+    onShare: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var menuOpen by remember { mutableStateOf(false) }
@@ -190,6 +206,14 @@ private fun PlaylistCard(
                     )
                 }
                 DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    DropdownMenuItem(
+                        text = { Text(stringResource(R.string.action_share)) },
+                        leadingIcon = { Icon(Icons.Rounded.Share, null) },
+                        onClick = {
+                            menuOpen = false
+                            onShare()
+                        },
+                    )
                     DropdownMenuItem(
                         text = { Text(stringResource(R.string.action_rename)) },
                         leadingIcon = { Icon(Icons.Rounded.DriveFileRenameOutline, null) },

@@ -228,7 +228,7 @@
     <string name="settings_rescan">بررسی دوبارهٔ کتابخانهٔ موسیقی</string>
     <string name="settings_rescan_summary">جست‌وجوی فایل‌های صوتی جدید یا تغییریافته</string>
     <string name="settings_include_non_music">نمایش فایل‌های غیرموسیقی</string>
-    <string name="settings_include_non_music_summary">شامل زنگ‌ها، اعلان‌ها و پادکست‌ها</string>
+    <string name="settings_include_non_music_summary">زنگ‌ها، اعلان‌ها، پیام‌های صوتی برنامه‌های چت و ضبط‌صداها را هم پیدا کن</string>
     <string name="settings_show_artwork">نمایش تصویر آلبوم</string>
     <string name="settings_show_artwork_summary">برای پیمایش سریع‌تر در کتابخانه‌های بزرگ خاموش کنید</string>
     <string name="settings_default_sort">ترتیب مرتب‌سازی پیش‌فرض</string>
@@ -331,4 +331,20 @@
     <string name="duration_hours">%1$d ساعت</string>
     <string name="duration_minutes">%1$d دقیقه</string>
     <string name="duration_zero_minutes">0 دقیقه</string>
+    <string name="view_mode_list">نمای فهرستی</string>
+    <string name="view_mode_cover">نمای شبکه‌ای جلد</string>
+    <string name="playlist_share_empty_title">فهرست خالی است</string>
+    <string name="playlist_share_empty_body">ابتدا چند آهنگ به «%1$s» اضافه کنید و سپس آن را هم‌رسانی کنید.</string>
+    <string name="delete_file_body_with_size">پروندهٔ «%1$s» ‏(%2$s) برای همیشه از این دستگاه حذف خواهد شد. این کار برگشت‌پذیر نیست.</string>
+    <string name="folders_title">پوشه‌ها</string>
+    <string name="folders_empty_title">پوشه‌ای پیدا نشد</string>
+    <string name="folders_empty_body">آهنگ‌ها اینجا بر اساس پوشه‌ای که در آن ذخیره شده‌اند دسته‌بندی می‌شوند.</string>
+    <string name="folders_song_count">%1$d آهنگ</string>
+    <string name="folders_selected_count">%1$d پوشه انتخاب شد</string>
+    <string name="folder_info_title">جزئیات پوشه</string>
+    <string name="folder_info_menu">اطلاعات پوشه</string>
+    <string name="folder_info_name">نام</string>
+    <string name="folder_info_path">مسیر</string>
+    <string name="folder_info_count">آهنگ‌ها</string>
+    <string name="folder_info_size">حجم</string>
 </resources>

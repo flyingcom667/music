@@ -10,10 +10,18 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.tidalmusic.player.data.preferences.ThemeMode
+
+/**
+ * The colour of seek-bar thumbs and played tracks: deep navy in the light theme, pale
+ * cyan in the dark theme (navy would vanish on the dark surfaces). Read through
+ * [LocalTidalSeekbarColor] so every slider in the app stays identical.
+ */
+val LocalTidalSeekbarColor = staticCompositionLocalOf { OceanNavy }
 
 private val DarkColors = darkColorScheme(
     primary = DarkPrimary,
@@ -66,12 +74,12 @@ private val LightColors = lightColorScheme(
     onTertiary = LightOnTertiary,
     tertiaryContainer = LightTertiaryContainer,
     onTertiaryContainer = LightOnTertiaryContainer,
-    background = LightBackground,
-    onBackground = LightOnBackground,
-    surface = LightSurface,
-    onSurface = LightOnSurface,
-    surfaceVariant = LightSurfaceVariant,
-    onSurfaceVariant = LightOnSurfaceVariant,
+    background = LightBackgroundColor,
+    onBackground = LightOnSurfaceColor,
+    surface = LightSurfaceColor,
+    onSurface = LightOnSurfaceColor,
+    surfaceVariant = LightSurfaceVariantColor,
+    onSurfaceVariant = LightOnSurfaceVariantColor,
     surfaceTint = LightPrimary,
     inverseSurface = LightInverseSurface,
     inverseOnSurface = LightInverseOnSurface,
@@ -79,14 +87,14 @@ private val LightColors = lightColorScheme(
     onError = LightOnError,
     errorContainer = LightErrorContainer,
     onErrorContainer = LightOnErrorContainer,
-    outline = LightOutline,
-    outlineVariant = LightOutlineVariant,
+    outline = LightOutlineColor,
+    outlineVariant = LightOutlineVariantColor,
     scrim = LightScrim,
-    surfaceContainerLowest = LightSurfaceContainerLowest,
-    surfaceContainerLow = LightSurfaceContainerLow,
-    surfaceContainer = LightSurfaceContainer,
-    surfaceContainerHigh = LightSurfaceContainerHigh,
-    surfaceContainerHighest = LightSurfaceContainerHighest,
+    surfaceContainerLowest = LightSurfaceContainerLowestColor,
+    surfaceContainerLow = LightSurfaceContainerLowColor,
+    surfaceContainer = LightSurfaceContainerColor,
+    surfaceContainerHigh = LightSurfaceContainerHighColor,
+    surfaceContainerHighest = LightSurfaceContainerHighestColor,
 )
 
 /**
@@ -94,7 +102,7 @@ private val LightColors = lightColorScheme(
  *
  * @param themeMode the persisted preference: system default, light or dark.
  * @param dynamicColor when true and the OS supports it (Android 12+), the wallpaper
- *   palette replaces the brand palette. Off by default so the Ocean Periwinkle identity
+ *   palette replaces the brand palette. Off by default so the Ocean identity
  *   is what the user sees unless they explicitly ask otherwise.
  */
 @Composable
@@ -117,6 +125,7 @@ fun TidalMusicTheme(
         darkTheme -> DarkColors
         else -> LightColors
     }
+    val seekbarColor = if (darkTheme) OceanLightCyan else OceanNavy
 
     val view = LocalView.current
     if (!view.isInEditMode) {
@@ -129,10 +138,12 @@ fun TidalMusicTheme(
         }
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = TidalTypography,
-        shapes = TidalShapes,
-        content = content,
-    )
+    androidx.compose.runtime.CompositionLocalProvider(LocalTidalSeekbarColor provides seekbarColor) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = TidalTypography,
+            shapes = TidalShapes,
+            content = content,
+        )
+    }
 }

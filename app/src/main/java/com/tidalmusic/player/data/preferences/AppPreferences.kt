@@ -41,6 +41,21 @@ enum class ListDensity(val key: String) {
 }
 
 /**
+ * How a screen lays out its songs: a detailed row list or a cover grid.
+ *
+ * Every screen keeps its own value, so switching the library to covers does not force
+ * the same layout on playlists or the folder browser.
+ */
+enum class ViewMode(val key: String) {
+    LIST("list"),
+    COVER("cover");
+
+    companion object {
+        fun fromKey(key: String?): ViewMode = entries.firstOrNull { it.key == key } ?: LIST
+    }
+}
+
+/**
  * Typed façade over the DataStore preferences. Screens read a single [Settings] flow
  * and never touch keys directly.
  */
@@ -59,6 +74,9 @@ class AppPreferences(private val context: Context) : SettingsStore {
         val SHOW_ARTWORK = booleanPreferencesKey("show_artwork")
         val DEFAULT_SORT_ORDER = stringPreferencesKey("default_sort_order")
         val DEFAULT_SORT_DIRECTION = stringPreferencesKey("default_sort_direction")
+        val VIEW_MODE_LIBRARY = stringPreferencesKey("view_mode_library")
+        val VIEW_MODE_HOME = stringPreferencesKey("view_mode_home")
+        val VIEW_MODE_FOLDERS = stringPreferencesKey("view_mode_folders")
     }
 
     /** All user-facing settings in one immutable snapshot. */
@@ -75,6 +93,9 @@ class AppPreferences(private val context: Context) : SettingsStore {
         val showArtwork: Boolean = true,
         val defaultSortOrder: SortOrder = SortOrder.TITLE,
         val defaultSortDirection: SortDirection = SortDirection.ASCENDING,
+        val viewModeLibrary: ViewMode = ViewMode.LIST,
+        val viewModeHome: ViewMode = ViewMode.LIST,
+        val viewModeFolders: ViewMode = ViewMode.LIST,
     )
 
     override val settings: Flow<Settings> = context.dataStore.data
@@ -96,6 +117,9 @@ class AppPreferences(private val context: Context) : SettingsStore {
                 showArtwork = prefs[Keys.SHOW_ARTWORK] ?: true,
                 defaultSortOrder = SortOrder.fromKey(prefs[Keys.DEFAULT_SORT_ORDER]),
                 defaultSortDirection = SortDirection.fromKey(prefs[Keys.DEFAULT_SORT_DIRECTION]),
+                viewModeLibrary = ViewMode.fromKey(prefs[Keys.VIEW_MODE_LIBRARY]),
+                viewModeHome = ViewMode.fromKey(prefs[Keys.VIEW_MODE_HOME]),
+                viewModeFolders = ViewMode.fromKey(prefs[Keys.VIEW_MODE_FOLDERS]),
             )
         }
 
@@ -123,6 +147,12 @@ class AppPreferences(private val context: Context) : SettingsStore {
         it[Keys.DEFAULT_SORT_ORDER] = order.key
         it[Keys.DEFAULT_SORT_DIRECTION] = direction.key
     }
+
+    override suspend fun setViewModeLibrary(mode: ViewMode) = edit { it[Keys.VIEW_MODE_LIBRARY] = mode.key }
+
+    override suspend fun setViewModeHome(mode: ViewMode) = edit { it[Keys.VIEW_MODE_HOME] = mode.key }
+
+    override suspend fun setViewModeFolders(mode: ViewMode) = edit { it[Keys.VIEW_MODE_FOLDERS] = mode.key }
 
     private suspend fun edit(block: (androidx.datastore.preferences.core.MutablePreferences) -> Unit) {
         context.dataStore.edit(block)

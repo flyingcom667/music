@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.tidalmusic.player.R
+import com.tidalmusic.player.ui.theme.LocalTidalSeekbarColor
 import com.tidalmusic.player.util.TimeFormat
 
 /**
@@ -57,6 +58,7 @@ fun PlaybackProgressSlider(
     }
 
     val seekDescription = stringResource(R.string.player_seek_bar)
+    val seekbarColor = LocalTidalSeekbarColor.current
 
     Column(modifier = modifier.fillMaxWidth()) {
         Slider(
@@ -78,8 +80,8 @@ fun PlaybackProgressSlider(
                 )
                 .semantics { contentDescription = seekDescription },
             colors = SliderDefaults.colors(
-                thumbColor = MaterialTheme.colorScheme.primary,
-                activeTrackColor = MaterialTheme.colorScheme.primary,
+                thumbColor = seekbarColor,
+                activeTrackColor = seekbarColor,
                 inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 disabledThumbColor = MaterialTheme.colorScheme.outlineVariant,
                 disabledActiveTrackColor = MaterialTheme.colorScheme.outlineVariant,

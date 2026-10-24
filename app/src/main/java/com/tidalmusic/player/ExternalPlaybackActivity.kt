@@ -31,6 +31,13 @@ import java.util.concurrent.ExecutionException
 /** Compact file-manager playback that leaves the main app closed until requested. */
 class ExternalPlaybackActivity : ComponentActivity() {
 
+    // The ocean palette, mirrored from the Compose theme for this View-based window.
+    private val oceanNavy = 0xFF03045E.toInt()
+    private val oceanBlue = 0xFF0077B6.toInt()
+    private val oceanCyan = 0xFF00B4D8.toInt()
+    private val oceanLightCyan = 0xFF90E0EF.toInt()
+    private val oceanFoam = 0xFFCAF0F8.toInt()
+
     private data class PlaybackSnapshot(
         val items: List<MediaItem>,
         val currentIndex: Int,
@@ -89,10 +96,12 @@ class ExternalPlaybackActivity : ComponentActivity() {
     private fun showPlaybackWindow() {
         val root = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(dp(18), dp(14), dp(18), dp(14))
-            background = GradientDrawable().apply {
-                colors = intArrayOf(Color.rgb(248, 247, 252), Color.WHITE)
-                cornerRadius = dp(20).toFloat()
+            setPadding(dp(20), dp(18), dp(20), dp(18))
+            background = GradientDrawable(
+                GradientDrawable.Orientation.TL_BR,
+                intArrayOf(oceanNavy, oceanBlue),
+            ).apply {
+                cornerRadius = dp(24).toFloat()
             }
         }
         val header = LinearLayout(this).apply {
@@ -102,9 +111,10 @@ class ExternalPlaybackActivity : ComponentActivity() {
             TextView(this).apply {
                 text = audioTitle
                 textSize = 17f
-                setTextColor(Color.rgb(24, 24, 28))
+                setTextColor(oceanFoam)
                 typeface = Typeface.DEFAULT_BOLD
                 maxLines = 1
+                ellipsize = android.text.TextUtils.TruncateAt.END
             },
             LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f),
         )
@@ -113,7 +123,7 @@ class ExternalPlaybackActivity : ComponentActivity() {
                 setImageResource(R.drawable.ic_notif_close)
                 contentDescription = getString(R.string.action_close)
                 setBackgroundColor(Color.TRANSPARENT)
-                imageTintList = android.content.res.ColorStateList.valueOf(Color.DKGRAY)
+                imageTintList = android.content.res.ColorStateList.valueOf(oceanLightCyan)
                 setPadding(dp(10), dp(10), dp(10), dp(10))
                 layoutParams = LinearLayout.LayoutParams(dp(48), dp(48))
                 setOnClickListener { closePlayback() }
@@ -137,6 +147,9 @@ class ExternalPlaybackActivity : ComponentActivity() {
             max = 1_000
             isEnabled = false
             setPadding(0, 0, 0, 0)
+            progressTintList = android.content.res.ColorStateList.valueOf(oceanCyan)
+            progressBackgroundTintList = android.content.res.ColorStateList.valueOf(oceanBlue)
+            thumbTintList = android.content.res.ColorStateList.valueOf(oceanCyan)
             setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                 override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) = Unit
 
@@ -159,19 +172,19 @@ class ExternalPlaybackActivity : ComponentActivity() {
         val actions = LinearLayout(this).apply {
             gravity = Gravity.CENTER_VERTICAL
             orientation = LinearLayout.HORIZONTAL
-            setPadding(0, dp(4), 0, 0)
+            setPadding(0, dp(6), 0, 0)
         }
         playButton = ImageButton(this).apply {
             setImageResource(R.drawable.ic_notif_play)
             contentDescription = getString(R.string.action_play)
-            imageTintList = android.content.res.ColorStateList.valueOf(Color.rgb(28, 28, 32))
+            imageTintList = android.content.res.ColorStateList.valueOf(oceanNavy)
             background = GradientDrawable().apply {
-                setColor(Color.rgb(239, 237, 246))
+                setColor(oceanCyan)
                 shape = GradientDrawable.OVAL
             }
             isEnabled = false
-            layoutParams = LinearLayout.LayoutParams(dp(52), dp(52)).apply {
-                marginEnd = dp(12)
+            layoutParams = LinearLayout.LayoutParams(dp(54), dp(54)).apply {
+                marginEnd = dp(14)
             }
             setOnClickListener {
                 val controller = mediaController ?: return@setOnClickListener
@@ -182,6 +195,10 @@ class ExternalPlaybackActivity : ComponentActivity() {
         actions.addView(
             Button(this).apply {
                 text = getString(R.string.external_audio_open_in_app)
+                textSize = 15f
+                isAllCaps = false
+                backgroundTintList = android.content.res.ColorStateList.valueOf(oceanCyan)
+                setTextColor(oceanNavy)
                 setOnClickListener { openInApp() }
             },
             LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f),
@@ -346,7 +363,7 @@ class ExternalPlaybackActivity : ComponentActivity() {
 
     private fun timeLabel() = TextView(this).apply {
         textSize = 12f
-        setTextColor(Color.DKGRAY)
+        setTextColor(oceanLightCyan)
         gravity = Gravity.CENTER_VERTICAL
     }
 

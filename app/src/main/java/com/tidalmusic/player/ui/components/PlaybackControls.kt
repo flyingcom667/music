@@ -110,8 +110,8 @@ fun PlaybackControls(
             shape = CircleShape,
             modifier = Modifier.size(64.dp),
             colors = IconButtonDefaults.filledIconButtonColors(
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary,
+                containerColor = MaterialTheme.colorScheme.secondary,
+                contentColor = MaterialTheme.colorScheme.onSecondary,
                 disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 disabledContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             ),

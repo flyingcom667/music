@@ -10,7 +10,9 @@ import android.util.Size
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -119,6 +121,8 @@ object ArtworkLoader {
  *
  * @param contentDescription the accessibility description; pass `null` for decorative artwork
  *   that is described by the surrounding text.
+ * @param fillWidth when true the artwork expands to [modifier]'s width (square via aspect
+ *   ratio) instead of the fixed [size] — used by cover grids.
  */
 @Composable
 fun AlbumArtwork(
@@ -127,10 +131,15 @@ fun AlbumArtwork(
     cornerRadius: Dp = 12.dp,
     modifier: Modifier = Modifier,
     contentDescription: String? = null,
+    fillWidth: Boolean = false,
 ) {
     val context = LocalContext.current
     val density = LocalDensity.current
-    val targetSizePx = with(density) { size.roundToPx() }
+    val targetSizePx = if (fillWidth) {
+        512
+    } else {
+        with(density) { size.roundToPx() }
+    }
     val bitmap by produceState<ImageBitmap?>(
         initialValue = null,
         key1 = song?.id,
@@ -149,10 +158,17 @@ fun AlbumArtwork(
     } else {
         Modifier
     }
+    val sizing = if (fillWidth) {
+        Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+    } else {
+        Modifier.size(size)
+    }
 
     Box(
         modifier = modifier
-            .size(size)
+            .then(sizing)
             .clip(shape)
             .background(MaterialTheme.colorScheme.surfaceContainerHighest)
             .then(semantics),

@@ -84,6 +84,9 @@ class Media3PlaybackController(
 
     private var shuffleEnabled = false
 
+    /** Broken-track guard: how many consecutive failed skips have happened. */
+    private var consecutiveErrors = 0
+
     /**
      * A play request that arrived before the [MediaController] finished connecting.
      *
@@ -280,7 +283,6 @@ class Media3PlaybackController(
         val currentIndex = mediaController.currentMediaItemIndex
         val currentSong = songAt(currentIndex) ?: return
         val currentPosition = mediaController.currentPosition.coerceAtLeast(0L)
-        val wasPlaying = mediaController.playWhenReady
         val newOrder = if (enabled) {
             val timelineSongs = (0 until mediaController.mediaItemCount).mapNotNull(::songAt)
             val timelineCurrentIndex = currentIndex
@@ -297,13 +299,17 @@ class Media3PlaybackController(
 
         catalog.putAll(newOrder.associateBy { it.id })
         val newCurrentIndex = if (enabled) 0 else newOrder.indexOfFirst { it.id == currentSong.id }
+        // Replacing the timeline keeps playWhenReady and the current position, so the
+        // swap is seamless: the track keeps playing without a pause/play flash and
+        // never restarts from the beginning.
         mediaController.setMediaItems(
             newOrder.map(MediaItemMapper::toMediaItem),
             newCurrentIndex,
             currentPosition,
         )
-        mediaController.prepare()
-        if (wasPlaying) mediaController.play() else mediaController.pause()
+        if (mediaController.playbackState == Player.STATE_IDLE) {
+            mediaController.prepare()
+        }
         shuffleEnabled = enabled
         rebuildQueueFromTimeline()
         refreshState()
@@ -491,8 +497,12 @@ class Media3PlaybackController(
         }
 
         override fun onIsPlayingChanged(isPlaying: Boolean) {
+            if (isPlaying) {
+                // A track that actually plays is not broken; the skip guard resets.
+                consecutiveErrors = 0
+                emitTrackStartedIfPlaying()
+            }
             refreshState()
-            if (isPlaying) emitTrackStartedIfPlaying()
         }
 
         override fun onPlaybackStateChanged(playbackState: Int) {
@@ -505,6 +515,18 @@ class Media3PlaybackController(
             _events.tryEmit(
                 PlaybackEvent.Error(song, error.errorCodeName),
             )
+            // The track is broken: move on to the next one instead of stopping. The guard
+            // bounds the skips so an entirely damaged queue cannot loop errors forever.
+            val mediaController = controller ?: return
+            if (
+                mediaController.hasNextMediaItem() &&
+                consecutiveErrors < mediaController.mediaItemCount
+            ) {
+                consecutiveErrors++
+                mediaController.seekToNextMediaItem()
+                mediaController.prepare()
+                mediaController.play()
+            }
         }
 
         private fun emitTrackStartedIfPlaying() {

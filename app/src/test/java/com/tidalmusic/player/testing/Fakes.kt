@@ -5,6 +5,7 @@ import com.tidalmusic.player.data.preferences.ListDensity
 import com.tidalmusic.player.data.preferences.PlaybackSessionStore
 import com.tidalmusic.player.data.preferences.SettingsStore
 import com.tidalmusic.player.data.preferences.ThemeMode
+import com.tidalmusic.player.data.preferences.ViewMode
 import com.tidalmusic.player.data.repository.LibraryRepository
 import com.tidalmusic.player.data.repository.LibraryStats
 import com.tidalmusic.player.data.repository.PlaylistSummary
@@ -286,6 +287,18 @@ class FakeSettingsStore(
 
     override suspend fun setDefaultSort(order: SortOrder, direction: SortDirection) {
         state.update { it.copy(defaultSortOrder = order, defaultSortDirection = direction) }
+    }
+
+    override suspend fun setViewModeLibrary(mode: ViewMode) {
+        state.update { it.copy(viewModeLibrary = mode) }
+    }
+
+    override suspend fun setViewModeHome(mode: ViewMode) {
+        state.update { it.copy(viewModeHome = mode) }
+    }
+
+    override suspend fun setViewModeFolders(mode: ViewMode) {
+        state.update { it.copy(viewModeFolders = mode) }
     }
 }
 

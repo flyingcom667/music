@@ -60,9 +60,11 @@ import com.tidalmusic.player.domain.model.Song
 import com.tidalmusic.player.ui.components.AlbumArtwork
 import com.tidalmusic.player.ui.components.PlaybackControls
 import com.tidalmusic.player.ui.components.PlaybackProgressSlider
+import com.tidalmusic.player.ui.components.PlayingGradientBackdrop
 import com.tidalmusic.player.ui.components.SAFE_VOLUME_FRACTION
 import com.tidalmusic.player.ui.components.safeLevelMarker
 import com.tidalmusic.player.util.rememberAudioOutputKind
+import com.tidalmusic.player.ui.theme.LocalTidalSeekbarColor
 import com.tidalmusic.player.ui.components.TidalTextButton
 
 /**
@@ -108,15 +110,22 @@ fun NowPlayingScreen(
         if (volume > 0f) lastAudibleVolume = volume
     }
 
-    Column(
+    Box(
         modifier = modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 24.dp)
-            .navigationBarsPadding(),
-        horizontalAlignment = Alignment.CenterHorizontally,
+            .background(MaterialTheme.colorScheme.background),
     ) {
+        // Calm ocean-gradient sweep while the music plays; frozen in place while paused.
+        PlayingGradientBackdrop(isPlaying = state.isPlaying, modifier = Modifier.fillMaxSize())
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 24.dp)
+                .navigationBarsPadding(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -223,7 +232,6 @@ fun NowPlayingScreen(
                 positionMs = progress.positionMs,
                 durationMs = progress.durationMs,
                 onSeek = onSeek,
-                showSafeLevelMarker = showSafeLevel,
             )
 
             Spacer(Modifier.height(8.dp))
@@ -287,8 +295,9 @@ fun NowPlayingScreen(
             }
 
             Spacer(Modifier.height(24.dp))
-        } else {
-            EmptyPlayerState(modifier = Modifier.padding(top = 80.dp))
+            } else {
+                EmptyPlayerState(modifier = Modifier.padding(top = 80.dp))
+            }
         }
     }
 
@@ -401,11 +410,11 @@ private fun VolumeAdjustmentSheet(
                         color = MaterialTheme.colorScheme.error,
                     ),
                 colors = SliderDefaults.colors(
-                    thumbColor = MaterialTheme.colorScheme.primary,
+                    thumbColor = LocalTidalSeekbarColor.current,
                     activeTrackColor = if (volume > SAFE_VOLUME_FRACTION) {
                         MaterialTheme.colorScheme.error
                     } else {
-                        MaterialTheme.colorScheme.primary
+                        LocalTidalSeekbarColor.current
                     },
                     inactiveTrackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
                 ),
