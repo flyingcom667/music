@@ -28,6 +28,9 @@ import com.tidalmusic.player.util.TimeFormat
  * While the thumb is dragged the slider shows the dragged position, so the label follows the
  * finger instead of fighting the playback tick. The real position is only updated when the
  * drag finishes, which keeps seeking responsive on slow devices.
+ *
+ * When [showSafeLevelMarker] is set (a Bluetooth or wired headphone is the active route) a red
+ * line marks the unsafe listening level, so the limit is visible while seeking too.
  */
 @Composable
 fun PlaybackProgressSlider(
@@ -35,6 +38,7 @@ fun PlaybackProgressSlider(
     durationMs: Long,
     onSeek: (Long) -> Unit,
     modifier: Modifier = Modifier,
+    showSafeLevelMarker: Boolean = false,
 ) {
     val hasDuration = durationMs > 0L
     var dragging by remember { mutableStateOf(false) }
@@ -68,6 +72,10 @@ fun PlaybackProgressSlider(
             enabled = hasDuration,
             modifier = Modifier
                 .fillMaxWidth()
+                .safeLevelMarker(
+                    visible = showSafeLevelMarker,
+                    color = MaterialTheme.colorScheme.error,
+                )
                 .semantics { contentDescription = seekDescription },
             colors = SliderDefaults.colors(
                 thumbColor = MaterialTheme.colorScheme.primary,

@@ -21,11 +21,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -134,10 +130,8 @@ fun MusicApp(
 
     val libraryState by libraryVm.state.collectAsStateWithLifecycle()
     val playbackState by playerVm.state.collectAsStateWithLifecycle()
-    val progress by playerVm.progress.collectAsStateWithLifecycle()
     val queue by playerVm.queue.collectAsStateWithLifecycle()
     val isCurrentFavorite by playerVm.isFavorite.collectAsStateWithLifecycle()
-    val volume by playerVm.volume.collectAsStateWithLifecycle()
     val sleepTimer by playerVm.sleepTimer.collectAsStateWithLifecycle()
     val playlists by playlistsVm.playlists.collectAsStateWithLifecycle()
     val isSavingPlaylist by playlistsVm.isSaving.collectAsStateWithLifecycle()
@@ -244,6 +238,9 @@ fun MusicApp(
     // "Add songs to playlist" sends the user to the Library screen in selection mode:
     // they check the songs with the row checkboxes and confirm in the bottom bar.
     var addToPlaylistTarget by remember { mutableStateOf<PlaylistSummary?>(null) }
+    // Song ids waiting for a target playlist: the picker adds them in one batch, so the
+    // sheet flow (one song) and the library selection flow (many songs) share the dialog.
+    var pickerSongIds by remember { mutableStateOf<List<Long>>(emptyList()) }
     var showEditMetadata by remember { mutableStateOf(false) }
     var showCreatePlaylist by remember { mutableStateOf(false) }
     var renamePlaylist by remember { mutableStateOf<PlaylistSummary?>(null) }
@@ -336,7 +333,7 @@ fun MusicApp(
             externalPlaybackSnapshot = ExternalPlaybackSnapshot(
                 songs = queuedSongs,
                 startIndex = playingIndex,
-                positionMs = progress.positionMs,
+                positionMs = playerVm.progress.value.positionMs,
                 wasPlaying = playbackState.isPlaying,
             )
         }
@@ -397,18 +394,15 @@ fun MusicApp(
                 Column {
                     AnimatedVisibility(
                         visible = playbackState.hasSong,
-                        enter = expandVertically(
-                            animationSpec = tween(MotionTokens.ScreenTransitionMs),
-                        ) + fadeIn(animationSpec = tween(MotionTokens.ScreenTransitionMs)),
-                        exit = shrinkVertically(
-                            animationSpec = tween(MotionTokens.ScreenTransitionMs),
-                        ) + fadeOut(animationSpec = tween(MotionTokens.ScreenTransitionMs)),
+                        enter = fadeIn(animationSpec = tween(MotionTokens.TopLevelTransitionMs)),
+                        exit = fadeOut(animationSpec = tween(MotionTokens.TopLevelTransitionMs)),
                     ) {
+                        val miniPlayerProgress by playerVm.progress.collectAsStateWithLifecycle()
                         playbackState.currentSong?.let { song ->
                             MiniPlayer(
                                 song = song,
                                 isPlaying = playbackState.isPlaying,
-                                progress = { progress.progress },
+                                progress = { miniPlayerProgress.progress },
                                 onExpand = { navController.navigate(Routes.PLAYER) },
                                 onPlayPause = playerVm::togglePlayPause,
                                 onNext = playerVm::next,
@@ -445,56 +439,16 @@ fun MusicApp(
                 .fillMaxSize()
                 .padding(padding),
             enterTransition = {
-                val switchingTopLevel = initialState.destination.route in topLevelRoutes &&
-                    targetState.destination.route in topLevelRoutes
-                if (switchingTopLevel) {
-                    fadeIn(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
-                } else {
-                    fadeIn(animationSpec = tween(MotionTokens.ScreenTransitionMs)) +
-                        slideInHorizontally(
-                            initialOffsetX = { width -> width / 18 },
-                            animationSpec = tween(MotionTokens.ScreenTransitionMs),
-                        )
-                }
+                fadeIn(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
             },
             exitTransition = {
-                val switchingTopLevel = initialState.destination.route in topLevelRoutes &&
-                    targetState.destination.route in topLevelRoutes
-                if (switchingTopLevel) {
-                    fadeOut(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
-                } else {
-                    fadeOut(animationSpec = tween(MotionTokens.ScreenTransitionMs)) +
-                        slideOutHorizontally(
-                            targetOffsetX = { width -> -width / 24 },
-                            animationSpec = tween(MotionTokens.ScreenTransitionMs),
-                        )
-                }
+                fadeOut(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
             },
             popEnterTransition = {
-                val switchingTopLevel = initialState.destination.route in topLevelRoutes &&
-                    targetState.destination.route in topLevelRoutes
-                if (switchingTopLevel) {
-                    fadeIn(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
-                } else {
-                    fadeIn(animationSpec = tween(MotionTokens.ScreenTransitionMs)) +
-                        slideInHorizontally(
-                            initialOffsetX = { width -> -width / 18 },
-                            animationSpec = tween(MotionTokens.ScreenTransitionMs),
-                        )
-                }
+                fadeIn(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
             },
             popExitTransition = {
-                val switchingTopLevel = initialState.destination.route in topLevelRoutes &&
-                    targetState.destination.route in topLevelRoutes
-                if (switchingTopLevel) {
-                    fadeOut(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
-                } else {
-                    fadeOut(animationSpec = tween(MotionTokens.ScreenTransitionMs)) +
-                        slideOutHorizontally(
-                            targetOffsetX = { width -> width / 24 },
-                            animationSpec = tween(MotionTokens.ScreenTransitionMs),
-                        )
-                }
+                fadeOut(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
             },
         ) {
             composable(TopLevelDestination.HOME.route) {
@@ -537,6 +491,8 @@ fun MusicApp(
                     listState = libraryListState,
                     currentSongId = playbackState.currentSong?.id,
                     isPlaying = playbackState.isPlaying,
+                    density = settings.density,
+                    showArtwork = settings.showArtwork,
                     onQueryChange = libraryVm::onQueryChange,
                     onClearQuery = libraryVm::clearQuery,
                     onSortClick = { showSortDialog = true },
@@ -555,6 +511,21 @@ fun MusicApp(
                     },
                     openSearch = openLibrarySearch,
                     onSearchOpened = { openLibrarySearch = false },
+                    addPlaylistName = addToPlaylistTarget?.name,
+                    onAddSelectedToPlaylist = { songs ->
+                        val target = addToPlaylistTarget
+                        if (target != null) {
+                            songActionsVm.addSongsToPlaylist(target.id, songs.map { it.id })
+                        }
+                    },
+                    onAddSelectionToPlaylist = { songs ->
+                        if (songs.isNotEmpty()) {
+                            pickerSongIds = songs.map { it.id }
+                            addToPlaylistTarget = null
+                            showPlaylistPicker = true
+                        }
+                    },
+                    onExitAddMode = { addToPlaylistTarget = null },
                 )
             }
 
@@ -588,15 +559,23 @@ fun MusicApp(
                     onBack = { navController.popBackStack() },
                     onPlay = { songs, index -> playerVm.playSongs(songs, index) },
                     onShuffle = { songs -> playerVm.playSongs(songs, 0, shuffle = true) },
-                    onOpenPlayer = { navController.navigate(Routes.PLAYER) },
+                    onAddSongs = { playlist ->
+                        addToPlaylistTarget = playlist
+                        openLibrarySearch = false
+                        navigateToTopLevel(TopLevelDestination.LIBRARY.route)
+                    },
+                    onRenamePlaylist = { renamePlaylist = it },
+                    onDeletePlaylist = { deletePlaylist = it },
                     onSongOverflow = songActionsVm::select,
                 )
             }
 
             composable(Routes.PLAYER) {
+                val playerProgress by playerVm.progress.collectAsStateWithLifecycle()
+                val volume by playerVm.volume.collectAsStateWithLifecycle()
                 NowPlayingScreen(
                     state = playbackState,
-                    progress = progress,
+                    progress = playerProgress,
                     isFavorite = isCurrentFavorite,
                     artworkAnimationEnabled = settings.artworkAnimation,
                     onBack = { navController.popBackStack() },
@@ -690,6 +669,7 @@ fun MusicApp(
                 val song = playbackState.currentSong
                 if (song != null) {
                     addToPlaylistTarget = null
+                    pickerSongIds = listOf(song.id)
                     showPlaylistPicker = true
                 }
             },
@@ -727,7 +707,15 @@ fun MusicApp(
             onPlayNow = {
                 songActionsVm.clearSelection()
                 val index = libraryState.songs.indexOfFirst { it.id == song.id }
-                if (index >= 0) playerVm.playSongs(libraryState.songs, index)
+                if (index >= 0) {
+                    playerVm.playSongs(libraryState.songs, index)
+                } else {
+                    // The sheet can be opened from a playlist or while a filter is active;
+                    // the visible list may not contain the song. Never leave the action dead.
+                    libraryState.allSongs[song.id]?.let { resolved ->
+                        playerVm.playSongs(listOf(resolved), 0)
+                    }
+                }
             },
             onPlayNext = {
                 songActionsVm.clearSelection()
@@ -740,6 +728,7 @@ fun MusicApp(
             onAddToPlaylist = {
                 songActionsVm.clearSelection()
                 addToPlaylistTarget = null
+                pickerSongIds = listOf(song.id)
                 showPlaylistPicker = true
             },
             onToggleFavorite = { songActionsVm.toggleFavorite(song) },
@@ -792,16 +781,27 @@ fun MusicApp(
     if (showPlaylistPicker) {
         PlaylistPickerDialog(
             playlists = actionPlaylists,
-            onDismiss = { showPlaylistPicker = false },
+            onDismiss = {
+                showPlaylistPicker = false
+                pickerSongIds = emptyList()
+            },
             onPick = { playlistId ->
                 showPlaylistPicker = false
-                val song = selectedSong ?: playbackState.currentSong
-                if (song != null) songActionsVm.addToPlaylist(playlistId, song.id)
+                val songIds = pickerSongIds.ifEmpty {
+                    listOfNotNull(selectedSong?.id ?: playbackState.currentSong?.id)
+                }
+                pickerSongIds = emptyList()
+                if (songIds.isNotEmpty()) songActionsVm.addSongsToPlaylist(playlistId, songIds)
             },
             onCreateNew = { name ->
                 showPlaylistPicker = false
-                val song = selectedSong ?: playbackState.currentSong
-                if (song != null) songActionsVm.createPlaylistWithSong(name, song.id)
+                val songIds = pickerSongIds.ifEmpty {
+                    listOfNotNull(selectedSong?.id ?: playbackState.currentSong?.id)
+                }
+                pickerSongIds = emptyList()
+                if (songIds.isNotEmpty()) {
+                    songActionsVm.createPlaylistWithSongs(name, songIds)
+                }
             },
         )
     }
@@ -873,10 +873,11 @@ fun MusicApp(
     }
 
     externalPreviewSong?.let { song ->
+        val externalProgress by playerVm.progress.collectAsStateWithLifecycle()
         ExternalPlaybackDialog(
             song = song,
             isPlaying = playbackState.isPlaying,
-            progress = progress,
+            progress = externalProgress,
             onPlayPause = playerVm::togglePlayPause,
             onSeek = playerVm::seekTo,
             onOpenInApp = {

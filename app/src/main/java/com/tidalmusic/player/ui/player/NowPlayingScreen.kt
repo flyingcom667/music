@@ -60,6 +60,9 @@ import com.tidalmusic.player.domain.model.Song
 import com.tidalmusic.player.ui.components.AlbumArtwork
 import com.tidalmusic.player.ui.components.PlaybackControls
 import com.tidalmusic.player.ui.components.PlaybackProgressSlider
+import com.tidalmusic.player.ui.components.SAFE_VOLUME_FRACTION
+import com.tidalmusic.player.ui.components.safeLevelMarker
+import com.tidalmusic.player.util.rememberAudioOutputKind
 import com.tidalmusic.player.ui.components.TidalTextButton
 
 /**
@@ -95,6 +98,10 @@ fun NowPlayingScreen(
     val song = state.currentSong
     val artworkSize = 300.dp
     var showVolumeSheet by remember { mutableStateOf(false) }
+    // Bluetooth and wired outputs go straight into the ears: the safe-level red line is only
+    // meaningful for those routes, not for the loudspeaker.
+    val outputKind = rememberAudioOutputKind()
+    val showSafeLevel = outputKind.isPersonal
     var lastAudibleVolume by remember { mutableFloatStateOf(volume.takeIf { it > 0f } ?: 1f) }
 
     androidx.compose.runtime.LaunchedEffect(volume) {
@@ -216,6 +223,7 @@ fun NowPlayingScreen(
                 positionMs = progress.positionMs,
                 durationMs = progress.durationMs,
                 onSeek = onSeek,
+                showSafeLevelMarker = showSafeLevel,
             )
 
             Spacer(Modifier.height(8.dp))
@@ -287,6 +295,7 @@ fun NowPlayingScreen(
     if (showVolumeSheet) {
         VolumeAdjustmentSheet(
             volume = volume,
+            showSafeLevel = showSafeLevel,
             onVolumeChange = {
                 if (it > 0f) lastAudibleVolume = it
                 onVolumeChange(it)
@@ -334,6 +343,7 @@ private fun PlayerSecondaryAction(
 @Composable
 private fun VolumeAdjustmentSheet(
     volume: Float,
+    showSafeLevel: Boolean,
     onVolumeChange: (Float) -> Unit,
     onToggleMute: () -> Unit,
     onDismiss: () -> Unit,
@@ -385,7 +395,11 @@ private fun VolumeAdjustmentSheet(
                 valueRange = 0f..1f,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(bottom = 16.dp),
+                    .padding(bottom = 16.dp)
+                    .safeLevelMarker(
+                        visible = showSafeLevel,
+                        color = MaterialTheme.colorScheme.error,
+                    ),
                 colors = SliderDefaults.colors(
                     thumbColor = MaterialTheme.colorScheme.primary,
                     activeTrackColor = if (volume > SAFE_VOLUME_FRACTION) {
@@ -408,7 +422,6 @@ private fun VolumeAdjustmentSheet(
     }
 }
 
-private const val SAFE_VOLUME_FRACTION = 0.7f
 private const val SEEK_JUMP_MS = 20_000L
 
 /**
@@ -421,8 +434,8 @@ private const val SEEK_JUMP_MS = 20_000L
 @Composable
 private fun Artwork(song: Song, size: Dp, animate: Boolean) {
     val scale by animateFloatAsState(
-        targetValue = if (animate) 1.02f else 1f,
-        animationSpec = tween(durationMillis = 600),
+        targetValue = if (animate) 1.005f else 1f,
+        animationSpec = tween(durationMillis = 180),
         label = "artworkScale",
     )
     Box(

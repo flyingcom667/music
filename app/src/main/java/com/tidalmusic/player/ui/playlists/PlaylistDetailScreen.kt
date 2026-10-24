@@ -53,7 +53,6 @@ import com.tidalmusic.player.ui.components.EmptyState
 import com.tidalmusic.player.ui.components.HintChip
 import com.tidalmusic.player.ui.components.SongRow
 import com.tidalmusic.player.ui.components.TidalTextButton
-import com.tidalmusic.player.util.TimeFormat
 
 /**
  * The playlist detail screen.
@@ -183,7 +182,7 @@ fun PlaylistDetailScreen(
                         Text(
                             text = stringResource(
                                 R.string.playlist_duration,
-                                TimeFormat.longDuration(totalDuration),
+                                formatLongDuration(totalDuration),
                             ),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,

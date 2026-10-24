@@ -69,11 +69,4 @@ object MediaPermissions {
     ).apply {
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     }
-
-    /** Intent that opens the system volume panel for the media stream. */
-    fun systemVolumePanelIntent(): Intent? {
-        val intent = Intent("android.intent.action.VOLUME_CHANGED")
-        intent.putExtra("android.intent.extra.VOLUME_STREAM_TYPE", 3 /* STREAM_MUSIC */)
-        return intent
-    }
 }

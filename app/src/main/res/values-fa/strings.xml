@@ -323,7 +323,12 @@
     <string name="playback_error_decode">این قالب صوتی پشتیبانی نمی‌شود</string>
     <string name="library_add_n_to_playlist">اضافه کردن %1$d به «%2$s»</string>
     <string name="library_pick_songs_for_playlist">انتخاب آهنگ برای «%1$s»</string>
-    <string name="library_letter_rail">پرش به حرف</string>
     <string name="library_selected_count_short">%1$d انتخاب شد</string>
     <string name="playlist_songs_added_count">%1$d آهنگ به فهرست اضافه شد</string>
+    <string name="state_on">روشن</string>
+    <string name="state_off">خاموش</string>
+    <string name="duration_hours_minutes">%1$d ساعت و %2$d دقیقه</string>
+    <string name="duration_hours">%1$d ساعت</string>
+    <string name="duration_minutes">%1$d دقیقه</string>
+    <string name="duration_zero_minutes">0 دقیقه</string>
 </resources>

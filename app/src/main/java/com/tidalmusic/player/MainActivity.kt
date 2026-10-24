@@ -23,6 +23,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.tidalmusic.player.di.AppContainer
 import com.tidalmusic.player.domain.model.Song
@@ -31,6 +32,9 @@ import com.tidalmusic.player.ui.navigation.MusicApp
 import com.tidalmusic.player.ui.theme.TidalMusicTheme
 import com.tidalmusic.player.ui.viewmodel.AppViewModelFactory
 import com.tidalmusic.player.ui.viewmodel.SettingsViewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 /**
  * The main application Activity.
@@ -46,6 +50,9 @@ class MainActivity : ComponentActivity() {
     private var hasAudioPermission by mutableStateOf(false)
     private var externalSong by mutableStateOf<Song?>(null)
     private var externalAudioUnavailable by mutableStateOf(false)
+
+    /** Guards against a stale async resolution overwriting a newer "open with" request. */
+    private var externalResolveGeneration = 0
 
     /**
      * Resolved once per Activity. Reading it from a composable would otherwise perform a
@@ -74,8 +81,7 @@ class MainActivity : ComponentActivity() {
             window.isNavigationBarContrastEnforced = false
         }
         hasAudioPermission = MediaPermissions.hasAudioAccess(this)
-        externalSong = intent.toExternalSong()
-        externalAudioUnavailable = intent.isAudioOpenRequest() && externalSong == null
+        resolveExternalSong(intent)
 
         setContent {
             val factory = remember(container) { AppViewModelFactory(container) }
@@ -137,8 +143,30 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        externalSong = intent.toExternalSong()
-        externalAudioUnavailable = intent.isAudioOpenRequest() && externalSong == null
+        resolveExternalSong(intent)
+    }
+
+    /**
+     * Resolves an externally opened audio file into a [Song].
+     *
+     * The provider queries and the readability probe are file I/O, so they run off the main
+     * thread; the result is published only if it is still the newest request (a rapid
+     * "open with" for another file must not be overwritten by a stale answer).
+     */
+    private fun resolveExternalSong(intent: Intent) {
+        externalSong = null
+        externalAudioUnavailable = false
+        if (!intent.isAudioOpenRequest()) return
+        val generation = ++externalResolveGeneration
+        lifecycleScope.launch {
+            val song = withContext(Dispatchers.IO) {
+                runCatching { intent.toExternalSong() }.getOrNull()
+            }
+            if (generation == externalResolveGeneration) {
+                externalSong = song
+                externalAudioUnavailable = song == null
+            }
+        }
     }
 
     private fun openAppSettings() {

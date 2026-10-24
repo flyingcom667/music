@@ -43,17 +43,11 @@ data class LibraryUiState(
     val scanTotal: Int = 0,
     val errorMessage: String? = null,
     val permissionGranted: Boolean = true,
-    /** The first letters present in [songs], in list order — the letter rail shows only these. */
-    val indexLetters: List<Char> = emptyList(),
-    /** Row index of the first song for each letter in [indexLetters]. */
-    val letterStartIndices: Map<Char, Int> = emptyMap(),
 ) {
     val isEmpty: Boolean get() = songs.isEmpty() && recentlyAdded.isEmpty()
     val isSearching: Boolean get() = query.isNotBlank()
     val songCount: Int get() = allSongs.size
 
-    /** The row the letter rail should scroll to for [letter], or null when it has no songs. */
-    fun startIndexFor(letter: Char): Int? = letterStartIndices[letter]
 }
 
 private data class ComputedLibrary(
@@ -61,9 +55,6 @@ private data class ComputedLibrary(
     val songs: List<Song>,
     val recentlyAdded: List<Song>,
     val allSongs: Map<Long, Song>,
-    val recentlyPlayed: List<Song>,
-    val indexLetters: List<Char>,
-    val letterStartIndices: Map<Char, Int>,
 )
 
 /**
@@ -238,7 +229,6 @@ class LibraryViewModel(
         val sort = snapshot.sort
         val sourceSongs = rawSongs
         val hidden = hiddenIds
-        val historyIds = recentlyPlayedIds
 
         val compute: suspend () -> Unit = {
             val result = withContext(Dispatchers.Default) {
@@ -246,25 +236,11 @@ class LibraryViewModel(
                 val filtered = LibraryQueries.search(visible, query)
                 val byId = visible.associateBy { it.id }
                 val sorted = LibraryQueries.sort(filtered, sort)
-                // One pass over the sorted list builds the letter rail index: only letters
-                // that actually have songs are recorded, together with their first row.
-                val letters = ArrayList<Char>()
-                val starts = HashMap<Char, Int>()
-                sorted.forEachIndexed { index, song ->
-                    val letter = LibraryQueries.indexLetter(song.title)
-                    if (letter !in starts) {
-                        starts[letter] = index
-                        letters += letter
-                    }
-                }
                 ComputedLibrary(
                     status = if (visible.isEmpty()) LibraryStatus.EMPTY else LibraryStatus.CONTENT,
                     songs = sorted,
                     recentlyAdded = LibraryQueries.recentlyAdded(filtered),
                     allSongs = byId,
-                    recentlyPlayed = historyIds.mapNotNull { byId[it] },
-                    indexLetters = letters,
-                    letterStartIndices = starts,
                 )
             }
             _state.value = _state.value.copy(
@@ -272,9 +248,10 @@ class LibraryViewModel(
                 songs = result.songs,
                 recentlyAdded = result.recentlyAdded,
                 allSongs = result.allSongs,
-                recentlyPlayed = result.recentlyPlayed,
-                indexLetters = result.indexLetters,
-                letterStartIndices = result.letterStartIndices,
+                // Resolve against the newest history when this background computation
+                // completes. A play-history update may arrive while the library is sorting;
+                // using an earlier snapshot here can otherwise erase the newly played song.
+                recentlyPlayed = recentlyPlayedIds.mapNotNull { result.allSongs[it] },
                 isRefreshing = false,
             )
         }

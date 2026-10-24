@@ -31,6 +31,7 @@ import androidx.compose.ui.unit.dp
 import com.tidalmusic.player.R
 import com.tidalmusic.player.domain.model.PlaybackProgress
 import com.tidalmusic.player.domain.model.Song
+import com.tidalmusic.player.util.rememberAudioOutputKind
 
 @Composable
 fun ExternalPlaybackDialog(
@@ -112,6 +113,7 @@ fun ExternalPlaybackDialog(
                     positionMs = progress.positionMs,
                     durationMs = progress.durationMs.takeIf { it > 0 } ?: song.durationMs,
                     onSeek = onSeek,
+                    showSafeLevelMarker = rememberAudioOutputKind().isPersonal,
                 )
 
                 Row(

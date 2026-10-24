@@ -153,14 +153,19 @@ class SongActionsViewModel(
     }
 
     fun createPlaylistWithSong(name: String, songId: Long) {
-        if (_isBusy.value) return
+        createPlaylistWithSongs(name, listOf(songId))
+    }
+
+    /** Creates a playlist and fills it with every checked song in one batch. */
+    fun createPlaylistWithSongs(name: String, songIds: List<Long>) {
+        if (_isBusy.value || songIds.isEmpty()) return
         _isBusy.value = true
         viewModelScope.launch {
             val result = userLibraryRepository.createPlaylist(name, null)
             _isBusy.value = false
             result.fold(
                 onSuccess = { id ->
-                    userLibraryRepository.addSongsToPlaylist(id, listOf(songId))
+                    userLibraryRepository.addSongsToPlaylist(id, songIds)
                     _messages.tryEmit(UiMessage(R.string.playlist_created))
                 },
                 onFailure = { _messages.tryEmit(UiMessage(R.string.playlist_name_duplicate, isError = true)) },

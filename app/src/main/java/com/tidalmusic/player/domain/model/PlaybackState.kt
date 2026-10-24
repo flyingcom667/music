@@ -38,10 +38,10 @@ data class PlaybackProgress(
 }
 
 /** Repeat modes supported by the player. */
-enum class RepeatMode(val label: String) {
-    OFF("Repeat off"),
-    ALL("Repeat all"),
-    ONE("Repeat one");
+enum class RepeatMode {
+    OFF,
+    ALL,
+    ONE;
 
     /** Cycles OFF -> ALL -> ONE -> OFF, which is the order every player uses. */
     fun next(): RepeatMode = when (this) {

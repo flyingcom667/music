@@ -53,7 +53,6 @@ import com.tidalmusic.player.ui.components.AlbumArtwork
 import com.tidalmusic.player.ui.components.EmptyState
 import com.tidalmusic.player.ui.components.LoadingState
 import com.tidalmusic.player.ui.components.TidalTextButton
-import com.tidalmusic.player.util.TimeFormat
 
 /**
  * The Playlists overview: a create action and the list of user playlists.
@@ -175,7 +174,7 @@ private fun PlaylistCard(
                     Text(
                         text = stringResource(
                             R.string.playlist_duration,
-                            TimeFormat.longDuration(totalDuration),
+                            formatLongDuration(totalDuration),
                         ),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

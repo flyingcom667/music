@@ -102,10 +102,7 @@ class PlayerViewModel(
             controller.events.collect { event ->
                 when (event) {
                     is PlaybackEvent.TrackStarted -> {
-                        if (controller.state.value.isPlaying &&
-                            controller.state.value.currentSong?.id == event.song.id &&
-                            lastRecordedTrackId != event.song.id
-                        ) {
+                        if (lastRecordedTrackId != event.song.id) {
                             lastRecordedTrackId = event.song.id
                             userLibraryRepository.recordPlay(event.song.id)
                         }
@@ -137,7 +134,10 @@ class PlayerViewModel(
         _volume.value = controller.volume()
     }
 
-    private fun applyInitialSettings(settings: AppPreferences.Settings) {
+    private suspend fun applyInitialSettings(settings: AppPreferences.Settings) {
+        // The player commands only exist once the media controller is connected; the first
+        // DataStore emission always beats the service binding, so connect before applying.
+        controller.connect()
         controller.setRepeatMode(RepeatMode.fromKey(settings.defaultRepeatMode))
         controller.setPlaybackSpeed(settings.defaultPlaybackSpeed)
         if (settings.resumePlayback && controller.state.value.currentSong == null) {

@@ -215,7 +215,10 @@ class PlaybackService : MediaSessionService() {
         persistenceJob = serviceScope.launch {
             while (isActive) {
                 delay(POSITION_SAVE_INTERVAL_MS)
-                persistPosition(player)
+                // A paused position never changes; writing it again would only wake the disk.
+                if (player.isPlaying) {
+                    persistPosition(player)
+                }
             }
         }
     }

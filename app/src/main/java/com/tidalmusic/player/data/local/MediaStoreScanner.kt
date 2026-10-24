@@ -209,8 +209,11 @@ class MediaStoreScanner(private val context: Context) {
         private const val TAG = "MediaStoreScanner"
         private const val BATCH_SIZE = 40
 
-        /** The album-art URI for a track, used by the artwork loader. */
-        fun albumArtUri(song: Song): Uri = Uri.parse("content://media/external/audio/albumart/${song.id}")
+        /**
+         * The album-art URI for a track, used by the artwork loader.
+         * The provider keys album art by *album* id, not by track id.
+         */
+        fun albumArtUri(song: Song): Uri = Uri.parse("content://media/external/audio/albumart/${song.albumId}")
 
         /** The file name of a track without the extension. */
         private fun String.cleanTitle(displayName: String): String {

@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,33 +46,43 @@ import kotlinx.coroutines.withContext
 object ArtworkLoader {
 
     private const val MAX_CACHE_BYTES = 12 * 1024 * 1024
-    private const val TARGET_SIZE = 512
+    private const val DEFAULT_TARGET_SIZE = 256
+    private val TARGET_SIZE_BUCKETS = intArrayOf(128, 192, 256, 384, 512)
 
-    private val cache = object : LruCache<Long, Bitmap>(MAX_CACHE_BYTES) {
-        override fun sizeOf(key: Long, value: Bitmap): Int = value.byteCount
+    private data class ArtworkKey(val songId: Long, val size: Int)
+
+    private val cache = object : LruCache<ArtworkKey, Bitmap>(MAX_CACHE_BYTES) {
+        override fun sizeOf(key: ArtworkKey, value: Bitmap): Int = value.byteCount
     }
 
     private val missing = HashSet<Long>()
 
-    suspend fun load(context: Context, song: Song): Bitmap? = withContext(Dispatchers.IO) {
-        cache.get(song.id)?.let { return@withContext it }
+    suspend fun load(
+        context: Context,
+        song: Song,
+        requestedSizePx: Int = DEFAULT_TARGET_SIZE,
+    ): Bitmap? = withContext(Dispatchers.IO) {
+        val targetSize = TARGET_SIZE_BUCKETS.firstOrNull { it >= requestedSizePx }
+            ?: TARGET_SIZE_BUCKETS.last()
+        val key = ArtworkKey(song.id, targetSize)
+        cache.get(key)?.let { return@withContext it }
         if (song.id in missing) return@withContext null
-        val bitmap = readArtwork(context, song)
+        val bitmap = readArtwork(context, song, targetSize)
         if (bitmap == null) {
             if (missing.size < MAX_MISSING) missing.add(song.id)
         } else {
-            cache.put(song.id, bitmap)
+            cache.put(key, bitmap)
         }
         bitmap
     }
 
-    private fun readArtwork(context: Context, song: Song): Bitmap? {
+    private fun readArtwork(context: Context, song: Song, targetSize: Int): Bitmap? {
         // Preferred path: the media provider's own thumbnail, which respects the size hint.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             runCatching {
                 context.contentResolver.loadThumbnail(
                     song.uri,
-                    Size(TARGET_SIZE, TARGET_SIZE),
+                    Size(targetSize, targetSize),
                     null,
                 )
             }.getOrNull()?.let { return it }
@@ -81,7 +92,7 @@ object ArtworkLoader {
         return try {
             retriever.setDataSource(context, song.uri)
             val bytes = retriever.embeddedPicture ?: return null
-            decodeBounded(bytes)
+            decodeBounded(bytes, targetSize)
         } catch (e: Exception) {
             null
         } finally {
@@ -89,11 +100,11 @@ object ArtworkLoader {
         }
     }
 
-    private fun decodeBounded(bytes: ByteArray): Bitmap? {
+    private fun decodeBounded(bytes: ByteArray, targetSize: Int): Bitmap? {
         val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         BitmapFactory.decodeByteArray(bytes, 0, bytes.size, bounds)
         var sample = 1
-        while (bounds.outWidth / sample > TARGET_SIZE || bounds.outHeight / sample > TARGET_SIZE) {
+        while (bounds.outWidth / sample > targetSize || bounds.outHeight / sample > targetSize) {
             sample *= 2
         }
         val options = BitmapFactory.Options().apply { inSampleSize = sample }
@@ -118,11 +129,17 @@ fun AlbumArtwork(
     contentDescription: String? = null,
 ) {
     val context = LocalContext.current
-    val bitmap by produceState<ImageBitmap?>(initialValue = null, key1 = song?.id) {
+    val density = LocalDensity.current
+    val targetSizePx = with(density) { size.roundToPx() }
+    val bitmap by produceState<ImageBitmap?>(
+        initialValue = null,
+        key1 = song?.id,
+        key2 = targetSizePx,
+    ) {
         value = if (song == null) {
             null
         } else {
-            ArtworkLoader.load(context, song)?.asImageBitmap()
+            ArtworkLoader.load(context, song, targetSizePx)?.asImageBitmap()
         }
     }
 

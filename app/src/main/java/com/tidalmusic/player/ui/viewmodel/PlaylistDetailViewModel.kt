@@ -11,7 +11,6 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -32,35 +31,8 @@ class PlaylistDetailViewModel(
         initialValue = null,
     )
 
-    private val _isBusy = MutableStateFlow(false)
-    val isBusy: StateFlow<Boolean> = _isBusy.asStateFlow()
-
-    private val _deleted = MutableStateFlow(false)
-    val deleted: StateFlow<Boolean> = _deleted.asStateFlow()
-
     private val _messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 8)
     val messages: SharedFlow<UiMessage> = _messages.asSharedFlow()
-
-    fun addSongs(songIds: List<Long>) {
-        if (songIds.isEmpty() || _isBusy.value) return
-        _isBusy.value = true
-        viewModelScope.launch {
-            val result = repository.addSongsToPlaylist(playlistId, songIds)
-            _isBusy.value = false
-            result.fold(
-                onSuccess = { added ->
-                    _messages.tryEmit(
-                        if (added > 0) {
-                            UiMessage(R.string.playlist_songs_added, listOf(added))
-                        } else {
-                            UiMessage(R.string.playlist_songs_already_present)
-                        },
-                    )
-                },
-                onFailure = { _messages.tryEmit(UiMessage(R.string.playlist_song_added, isError = true)) },
-            )
-        }
-    }
 
     fun removeSong(songId: Long) {
         viewModelScope.launch {
@@ -82,30 +54,5 @@ class PlaylistDetailViewModel(
         if (from !in current.indices || to !in current.indices || from == to) return
         val reordered = current.toMutableList().apply { add(to, removeAt(from)) }
         viewModelScope.launch { repository.reorderPlaylist(playlistId, reordered) }
-    }
-
-    fun rename(name: String, description: String?) {
-        if (_isBusy.value) return
-        _isBusy.value = true
-        viewModelScope.launch {
-            val result = repository.renamePlaylist(playlistId, name, description)
-            _isBusy.value = false
-            result.fold(
-                onSuccess = { _messages.tryEmit(UiMessage(R.string.playlist_renamed)) },
-                onFailure = { _messages.tryEmit(UiMessage(R.string.playlist_name_duplicate, isError = true)) },
-            )
-        }
-    }
-
-    fun delete() {
-        viewModelScope.launch {
-            repository.deletePlaylist(playlistId).fold(
-                onSuccess = {
-                    _messages.tryEmit(UiMessage(R.string.playlist_deleted))
-                    _deleted.value = true
-                },
-                onFailure = { _messages.tryEmit(UiMessage(R.string.playlist_deleted, isError = true)) },
-            )
-        }
     }
 }

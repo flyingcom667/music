@@ -27,17 +27,15 @@ object TimeFormat {
         }
     }
 
-    /** Formats [millis] as a long, human readable duration such as `1 h 24 min`. */
-    fun longDuration(millis: Long): String {
-        if (millis <= 0L) return "0 min"
-        val totalMinutes = TimeUnit.MILLISECONDS.toMinutes(millis)
-        val hours = totalMinutes / 60
-        val minutes = totalMinutes % 60
-        return when {
-            hours > 0 && minutes > 0 -> String.format(Locale.US, "%d h %d min", hours, minutes)
-            hours > 0 -> String.format(Locale.US, "%d h", hours)
-            else -> String.format(Locale.US, "%d min", minutes)
-        }
+    /**
+     * Splits [millis] into whole hours and minutes for a long, human readable duration.
+     *
+     * The worded form ("1 h 24 min") is built by the UI from string resources so the
+     * abbreviations follow the device language; only the split lives here.
+     */
+    fun longDurationParts(millis: Long): Pair<Long, Long> {
+        val totalMinutes = TimeUnit.MILLISECONDS.toMinutes(millis.coerceAtLeast(0L))
+        return totalMinutes / 60 to totalMinutes % 60
     }
 
     /** Formats a count of bytes, e.g. `4.2 MB`. */

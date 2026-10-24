@@ -2,26 +2,21 @@ package com.tidalmusic.player.ui.library
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectVerticalDragGestures
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.activity.compose.BackHandler
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.BoxScope
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -58,6 +53,7 @@ import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -69,21 +65,18 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.tidalmusic.player.R
+import com.tidalmusic.player.data.preferences.ListDensity
 import com.tidalmusic.player.domain.model.Song
 import com.tidalmusic.player.domain.model.SortDirection
 import com.tidalmusic.player.domain.model.SortOrder
@@ -112,6 +105,8 @@ fun LibraryScreen(
     listState: LazyListState,
     currentSongId: Long?,
     isPlaying: Boolean,
+    density: ListDensity,
+    showArtwork: Boolean,
     onQueryChange: (String) -> Unit,
     onClearQuery: () -> Unit,
     onSortClick: () -> Unit,
@@ -127,17 +122,22 @@ fun LibraryScreen(
     onSearchOpened: () -> Unit,
     addPlaylistName: String? = null,
     onAddSelectedToPlaylist: (List<Song>) -> Unit = {},
+    onAddSelectionToPlaylist: (List<Song>) -> Unit = {},
     onExitAddMode: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    var selectedTab by rememberSaveable { mutableIntStateOf(1) }
     var searchExpanded by remember { mutableStateOf(false) }
     // Entering the add-to-playlist flow switches the screen into selection mode so the
     // user can immediately start ticking songs.
     var selectionMode by rememberSaveable { mutableStateOf(addPlaylistName != null) }
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     LaunchedEffect(addPlaylistName) {
-        if (addPlaylistName != null) selectionMode = true
+        if (addPlaylistName != null) {
+            selectionMode = true
+            selectedTab = 1
+            listState.scrollToItem(0)
+        }
     }
     var selectedSongIds by rememberSaveable(
         stateSaver = object : androidx.compose.runtime.saveable.Saver<Set<Long>, List<Long>> {
@@ -188,28 +188,30 @@ fun LibraryScreen(
     }
 
     BackHandler {
-        if (selectionMode) clearSelection() else onBack()
-    }
-
-    val songs = if (selectedTab == 0) state.songs else state.recentlyAdded
-    val titleHiddenByScroll = listState.firstVisibleItemIndex > 0 ||
-        listState.firstVisibleItemScrollOffset > 0
-    // The letter rail follows the *visible* tab: the All Songs tab is sorted by title, so
-    // the precomputed index applies; other views jump to the first row of the matching song.
-    val showLetterRail = selectedTab == 0 && state.indexLetters.size > 1
-    val activeLetter = remember(listState, state.indexLetters) {
-        val firstIndex = listState.firstVisibleItemIndex.coerceAtMost(songs.lastIndex)
-        songs.getOrNull(firstIndex)?.title?.let { visibleTitle ->
-            val target = com.tidalmusic.player.domain.LibraryQueries.indexLetter(visibleTitle)
-            state.indexLetters.firstOrNull { it == target } ?: state.indexLetters.firstOrNull()
+        when {
+            // Back closes the layers the screen opened, outermost first: search field,
+            // then selection mode, then navigation.
+            searchExpanded -> {
+                searchExpanded = false
+                focusManager.clearFocus()
+                keyboardController?.hide()
+            }
+            selectionMode -> {
+                clearSelection()
+                // Leaving the flow must also drop the target playlist, otherwise the bottom bar
+                // keeps showing a playlist the user backed out of.
+                if (addPlaylistName != null) onExitAddMode()
+            }
+            else -> onBack()
         }
     }
 
-    fun scrollToLetter(letter: Char) {
-        val start = state.startIndexFor(letter) ?: return
-        scope.launch { listState.animateScrollToItem(start) }
+    val songs = if (selectedTab == 1) state.songs else state.recentlyAdded
+    val titleHiddenByScroll by remember(listState) {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0
+        }
     }
-
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -258,6 +260,25 @@ fun LibraryScreen(
                     )
                 }
                 if (addPlaylistName == null) {
+                    IconButton(
+                        onClick = {
+                            // Keep the displayed order so the playlist receives the songs the
+                            // way the user sees them.
+                            val selected = songs.filter { it.id in selectedSongIds }
+                            if (selected.isNotEmpty()) {
+                                onAddSelectionToPlaylist(selected)
+                                clearSelection()
+                            }
+                        },
+                        enabled = selectedSongIds.isNotEmpty(),
+                        modifier = Modifier.size(48.dp),
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Rounded.PlaylistAdd,
+                            contentDescription = stringResource(R.string.action_add_to_playlist),
+                            tint = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                     IconButton(
                         onClick = {
                             val selected = state.allSongs.values.filter { it.id in selectedSongIds }
@@ -322,16 +343,16 @@ fun LibraryScreen(
                     )
                 }
             } else {
-                AnimatedVisibility(
-                    visible = !titleHiddenByScroll,
-                    modifier = Modifier.weight(1f),
-                ) {
+                if (!titleHiddenByScroll) {
                     Text(
                         text = stringResource(R.string.library_title),
                         style = MaterialTheme.typography.headlineMedium,
                         color = MaterialTheme.colorScheme.onBackground,
+                        modifier = Modifier.weight(1f),
                         maxLines = 1,
                     )
+                } else {
+                    Spacer(Modifier.weight(1f))
                 }
                 IconButton(
                     onClick = { searchExpanded = !searchExpanded },
@@ -382,19 +403,21 @@ fun LibraryScreen(
                 selected = selectedTab == 0,
                 onClick = {
                     selectedTab = 0
+                    scope.launch { listState.scrollToItem(0) }
                     focusManager.clearFocus()
                     keyboardController?.hide()
                 },
-                text = { Text(stringResource(R.string.library_tab_all_songs)) },
+                text = { Text(stringResource(R.string.library_tab_recently_added)) },
             )
             Tab(
                 selected = selectedTab == 1,
                 onClick = {
                     selectedTab = 1
+                    scope.launch { listState.scrollToItem(0) }
                     focusManager.clearFocus()
                     keyboardController?.hide()
                 },
-                text = { Text(stringResource(R.string.library_tab_recently_added)) },
+                text = { Text(stringResource(R.string.library_tab_all_songs)) },
             )
         }
 
@@ -475,19 +498,17 @@ fun LibraryScreen(
                         contentPadding = PaddingValues(
                             top = 4.dp,
                             bottom = 32.dp,
-                            end = if (showLetterRail && !selectionMode) 28.dp else 0.dp,
                         ),
                     ) {
                         itemsIndexed(items = songs, key = { _, song -> song.id }) { index, song ->
                             val checked = song.id in selectedSongIds
                             SongRow(
-                                modifier = Modifier.animateItem(),
                                 song = song,
                                 isCurrent = song.id == currentSongId,
                                 isPlaying = isPlaying,
                                 isFavorite = song.id in state.favorites,
-                                showArtwork = true,
-                                compact = false,
+                                showArtwork = showArtwork,
+                                compact = density == ListDensity.COMPACT,
                                 isSelected = checked,
                                 selectionMode = selectionMode,
                                 selectionCheckedLabel = stringResource(R.string.library_selected_item),
@@ -514,18 +535,6 @@ fun LibraryScreen(
                             )
                         }
                     }
-
-                    // Fast-search rail: only the letters that actually exist in the list.
-                    if (showLetterRail && !selectionMode) {
-                        LetterRail(
-                            letters = state.indexLetters,
-                            activeLetter = activeLetter,
-                            onLetterClick = ::scrollToLetter,
-                            modifier = Modifier
-                                .align(Alignment.CenterEnd)
-                                .padding(end = 2.dp),
-                        )
-                    }
                 }
             }
         }
@@ -542,7 +551,7 @@ fun LibraryScreen(
                     onExitAddMode()
                 },
                 onConfirm = {
-                    val selected = state.allSongs.values.filter { it.id in selectedSongIds }
+                    val selected = songs.filter { it.id in selectedSongIds }
                     onAddSelectedToPlaylist(selected)
                     clearSelection()
                     onExitAddMode()
@@ -596,7 +605,7 @@ private fun SearchField(
         value = query,
         onValueChange = onQueryChange,
         textStyle = MaterialTheme.typography.bodyLarge.copy(
-            color = Color.Black,
+            color = MaterialTheme.colorScheme.onSurface,
             fontWeight = FontWeight.Bold,
         ),
         modifier = Modifier
@@ -619,9 +628,9 @@ private fun SearchField(
             }
         },
         colors = TextFieldDefaults.colors(
-            focusedTextColor = Color.Black,
-            unfocusedTextColor = Color.Black,
-            cursorColor = Color.Black,
+            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+            unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+            cursorColor = MaterialTheme.colorScheme.primary,
             focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
             unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainer,
             focusedIndicatorColor = MaterialTheme.colorScheme.primary,
@@ -726,62 +735,6 @@ internal fun SortOrder.labelRes(): Int = when (this) {
     SortOrder.ALBUM -> R.string.library_sort_album_label
     SortOrder.DURATION -> R.string.library_sort_duration_label
     SortOrder.DATE_ADDED -> R.string.library_sort_date_added_label
-}
-
-/**
- * The fast-search letter rail shown on the right edge of the library list.
- *
- * It only contains the letters that actually exist in the current song list (precomputed by
- * the view model), so tapping any letter always jumps somewhere. A vertical drag scrubs
- * through the letters continuously, like the index bars in large system lists.
- */
-@Composable
-private fun LetterRail(
-    letters: List<Char>,
-    activeLetter: Char?,
-    onLetterClick: (Char) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    val railLabel = stringResource(R.string.library_letter_rail)
-    Column(
-        modifier = modifier
-            .widthIn(min = 24.dp)
-            .fillMaxHeight()
-            .semantics { contentDescription = railLabel }
-            .pointerInput(letters) {
-                detectVerticalDragGestures { change, _ ->
-                    val fraction = (change.position.y / size.height).coerceIn(0f, 1f)
-                    val index = (fraction * letters.size).toInt()
-                        .coerceIn(letters.indices)
-                    onLetterClick(letters[index])
-                    change.consume()
-                }
-            },
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.End,
-    ) {
-        letters.forEach { letter ->
-            val isActive = letter == activeLetter
-            Text(
-                text = letter.toString(),
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontSize = if (isActive) 12.sp else 10.sp,
-                    fontWeight = if (isActive) FontWeight.Bold else FontWeight.Medium,
-                ),
-                color = if (isActive) {
-                    MaterialTheme.colorScheme.primary
-                } else {
-                    MaterialTheme.colorScheme.onSurfaceVariant
-                },
-                modifier = Modifier
-                    .padding(vertical = 1.dp, horizontal = 4.dp)
-                    .clickable(
-                        interactionSource = remember { MutableInteractionSource() },
-                        indication = null,
-                    ) { onLetterClick(letter) },
-            )
-        }
-    }
 }
 
 /**

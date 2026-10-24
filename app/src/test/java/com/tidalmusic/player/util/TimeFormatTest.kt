@@ -32,11 +32,12 @@ class TimeFormatTest {
     }
 
     @Test
-    fun `long durations read as hours and minutes`() {
-        assertEquals("0 min", TimeFormat.longDuration(0L))
-        assertEquals("45 min", TimeFormat.longDuration(45 * 60_000L))
-        assertEquals("1 h", TimeFormat.longDuration(60 * 60_000L))
-        assertEquals("1 h 24 min", TimeFormat.longDuration(84 * 60_000L))
+    fun `long durations split into hours and minutes`() {
+        assertEquals(0L to 0L, TimeFormat.longDurationParts(0L))
+        assertEquals(0L to 45L, TimeFormat.longDurationParts(45 * 60_000L))
+        assertEquals(1L to 0L, TimeFormat.longDurationParts(60 * 60_000L))
+        assertEquals(1L to 24L, TimeFormat.longDurationParts(84 * 60_000L))
+        assertEquals(0L to 0L, TimeFormat.longDurationParts(-1L))
     }
 
     @Test

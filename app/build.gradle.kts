@@ -1,8 +1,19 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.ksp)
 }
+
+// Release signing. Locally the credentials live in keystore/keystore.properties (gitignored);
+// CI decodes them from the KEYSTORE_* secrets into the same file. Without them the release
+// APKs are built unsigned.
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore/keystore.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
+}
+val keystoreConfigured = keystoreProperties.getProperty("storeFile") != null
 
 android {
     namespace = "com.tidalmusic.player"
@@ -14,11 +25,22 @@ android {
         applicationId = "com.tidalmusic.player"
         minSdk = 26
         targetSdk = 37
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
+    }
+
+    signingConfigs {
+        create("release") {
+            if (keystoreConfigured) {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
     }
 
     buildTypes {
@@ -32,6 +54,9 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
             )
+            if (keystoreConfigured) {
+                signingConfig = signingConfigs.getByName("release")
+            }
         }
     }
 

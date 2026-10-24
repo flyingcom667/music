@@ -83,12 +83,25 @@ class Media3PlaybackController(
     private val catalog = mutableMapOf<Long, Song>()
 
     private var shuffleEnabled = false
-    private var pendingSeekMs: Long? = null
+
+    /**
+     * A play request that arrived before the [MediaController] finished connecting.
+     *
+     * A cold start can make the library usable before the service binding completes; the
+     * request is kept and flushed right after the connection instead of being dropped
+     * silently, so the first tap on a song always starts playback.
+     */
+    private var pendingPlay: PendingPlay? = null
+
+    private data class PendingPlay(val songs: List<Song>, val startIndex: Int, val shuffle: Boolean)
 
     // ------------------------------------------------------------------ connection
 
     override suspend fun connect() {
-        if (controller != null) return
+        if (controller != null) {
+            flushPendingPlay()
+            return
+        }
         if (connectJob?.isActive == true) {
             connectJob?.join()
             return
@@ -120,6 +133,7 @@ class Media3PlaybackController(
             rebuildQueueFromTimeline()
             refreshState()
             startProgressUpdates()
+            flushPendingPlay()
         }
         connectJob?.join()
     }
@@ -136,6 +150,13 @@ class Media3PlaybackController(
 
     override fun play(songs: List<Song>, startIndex: Int, shuffle: Boolean) {
         if (songs.isEmpty()) return
+        val mediaController = controller
+        if (mediaController == null) {
+            // Not connected yet: keep the request and start connecting. Flushed in connect().
+            pendingPlay = PendingPlay(songs, startIndex, shuffle)
+            scope.launch { connect() }
+            return
+        }
         val safeIndex = startIndex.coerceIn(0, songs.lastIndex)
         baseOrder.clear()
         baseOrder.addAll(songs)
@@ -146,11 +167,17 @@ class Media3PlaybackController(
         val order = if (shuffle) shuffledWithFirst(songs, safeIndex) else songs.toList()
         val startPosition = order.indexOfFirst { it.id == songs[safeIndex].id }.coerceAtLeast(0)
 
-        val mediaController = controller ?: return
         mediaController.setMediaItems(order.map { MediaItemMapper.toMediaItem(it) }, startPosition, 0L)
         mediaController.prepare()
         mediaController.play()
         rebuildQueueFromTimeline()
+    }
+
+    /** Runs a play request that was made before the connection was ready. */
+    private fun flushPendingPlay() {
+        val pending = pendingPlay ?: return
+        pendingPlay = null
+        play(pending.songs, pending.startIndex, pending.shuffle)
     }
 
     override fun play(song: Song, queue: List<Song>, startIndex: Int) {

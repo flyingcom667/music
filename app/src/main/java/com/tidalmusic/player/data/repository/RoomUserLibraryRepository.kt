@@ -99,25 +99,29 @@ class RoomUserLibraryRepository(
         playlistId: Long,
         songIds: List<Long>,
     ): Result<Int> = runCatching {
-        var position = playlistDao.maxPosition(playlistId)
-        var added = 0
-        val now = System.currentTimeMillis()
-        songIds.forEach { songId ->
-            if (!playlistDao.containsSong(playlistId, songId)) {
-                position += 1
-                playlistDao.addTrack(
-                    PlaylistTrackEntity(
-                        playlistId = playlistId,
-                        songId = songId,
-                        position = position,
-                        addedAt = now,
-                    ),
-                )
-                added += 1
+        // One transaction: a large batch is a single write, and a failure cannot leave the
+        // playlist half-filled.
+        database.withTransaction {
+            var position = playlistDao.maxPosition(playlistId)
+            var added = 0
+            val now = System.currentTimeMillis()
+            songIds.forEach { songId ->
+                if (!playlistDao.containsSong(playlistId, songId)) {
+                    position += 1
+                    playlistDao.addTrack(
+                        PlaylistTrackEntity(
+                            playlistId = playlistId,
+                            songId = songId,
+                            position = position,
+                            addedAt = now,
+                        ),
+                    )
+                    added += 1
+                }
             }
+            if (added > 0) playlistDao.touch(playlistId, now)
+            added
         }
-        if (added > 0) playlistDao.touch(playlistId, now)
-        added
     }
 
     override suspend fun removeSongFromPlaylist(playlistId: Long, songId: Long): Result<Unit> =

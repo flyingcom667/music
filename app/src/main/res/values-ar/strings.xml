@@ -323,7 +323,12 @@
     <string name="playback_error_decode">هذه الصيغة الصوتية غير مدعومة</string>
     <string name="library_add_n_to_playlist">أضف %1$d إلى “%2$s”</string>
     <string name="library_pick_songs_for_playlist">حدد المقاطع لـ“%1$s”</string>
-    <string name="library_letter_rail">انتقال إلى حرف</string>
     <string name="library_selected_count_short">%1$d محدد</string>
     <string name="playlist_songs_added_count">تمت إضافة %1$d من المقاطع إلى قائمة التشغيل</string>
+    <string name="state_on">تشغيل</string>
+    <string name="state_off">إيقاف</string>
+    <string name="duration_hours_minutes">%1$d س %2$d د</string>
+    <string name="duration_hours">%1$d س</string>
+    <string name="duration_minutes">%1$d د</string>
+    <string name="duration_zero_minutes">0 د</string>
 </resources>

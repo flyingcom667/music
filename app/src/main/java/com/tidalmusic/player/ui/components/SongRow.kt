@@ -10,12 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.CheckCircle
@@ -112,11 +106,7 @@ fun SongRow(
 
         // In multi-select mode the checkbox replaces the artwork so it is unmistakably
         // clear which items are checked.
-        AnimatedVisibility(
-            visible = selectionMode,
-            enter = fadeIn(tween(150)) + scaleIn(tween(150), initialScale = 0.8f),
-            exit = fadeOut(tween(150)) + scaleOut(tween(150), targetScale = 0.8f),
-        ) {
+        if (selectionMode) {
             Icon(
                 imageVector = if (isSelected) {
                     Icons.Rounded.CheckCircle

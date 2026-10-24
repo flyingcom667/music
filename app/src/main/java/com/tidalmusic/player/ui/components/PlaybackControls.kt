@@ -63,6 +63,8 @@ fun PlaybackControls(
         RepeatMode.ONE -> stringResource(R.string.action_repeat_one)
     }
     val shuffleLabel = stringResource(R.string.action_shuffle)
+    val onLabel = stringResource(R.string.state_on)
+    val offLabel = stringResource(R.string.state_off)
 
     Row(
         modifier = modifier,
@@ -74,7 +76,7 @@ fun PlaybackControls(
             enabled = enabled,
             modifier = Modifier
                 .size(48.dp)
-                .semantics { stateDescription = if (shuffleEnabled) "On" else "Off" },
+                .semantics { stateDescription = if (shuffleEnabled) onLabel else offLabel },
         ) {
             Icon(
                 imageVector = Icons.Rounded.Shuffle,
