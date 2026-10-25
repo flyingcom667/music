@@ -17,6 +17,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -60,8 +62,18 @@ class AudioEditorViewModel(
     private val _messages = MutableSharedFlow<UiMessage>(extraBufferCapacity = 8)
     val messages: SharedFlow<UiMessage> = _messages.asSharedFlow()
 
+    /** Real waveform amplitudes (0..100); null while the file is still being decoded. */
+    private val _waveform = MutableStateFlow<IntArray?>(null)
+    val waveform: StateFlow<IntArray?> = _waveform.asStateFlow()
+
+    /** The preview player's position, ticked at 100 ms while previewing. */
+    private val _previewPositionMs = MutableStateFlow(0L)
+    val previewPositionMs: StateFlow<Long> = _previewPositionMs.asStateFlow()
+
     private var previewPlayer: androidx.media3.exoplayer.ExoPlayer? = null
     private var exportJob: Job? = null
+
+    private var positionPollJob: Job? = null
 
     init {
         viewModelScope.launch {
@@ -73,6 +85,12 @@ class AudioEditorViewModel(
                     endMs = duration,
                 )
             }
+        }
+        // Decode the true amplitude envelope once, off the main thread.
+        viewModelScope.launch {
+            _waveform.value = runCatching {
+                withContext(Dispatchers.IO) { WaveformExtractor.extract(appContext, song) }
+            }.getOrNull()
         }
     }
 
@@ -132,15 +150,34 @@ class AudioEditorViewModel(
         player.prepare()
         player.play()
         _state.update { it.copy(isPreviewing = true) }
+        positionPollJob = viewModelScope.launch {
+            while (isActive) {
+                previewPlayer?.let { player ->
+                    _previewPositionMs.value = player.currentPosition.coerceIn(0L, _state.value.durationMs)
+                }
+                delay(100)
+            }
+        }
     }
 
     fun stopPreview() {
+        positionPollJob?.cancel()
+        positionPollJob = null
         previewPlayer?.run {
             stop()
             release()
         }
         previewPlayer = null
         _state.update { it.copy(isPreviewing = false) }
+        _previewPositionMs.value = 0L
+    }
+
+    /** Seeks the segment preview to [ms]; the waveform cursor follows. */
+    fun seekPreview(ms: Long) {
+        val duration = _state.value.durationMs
+        val target = ms.coerceIn(0L, duration)
+        previewPlayer?.seekTo(target)
+        _previewPositionMs.value = target
     }
 
     // ------------------------------------------------------------------ export

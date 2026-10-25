@@ -76,6 +76,8 @@ import com.tidalmusic.player.domain.model.PlaybackProgress
 import com.tidalmusic.player.domain.model.PlaybackState
 import com.tidalmusic.player.domain.model.Song
 import com.tidalmusic.player.ui.components.AlbumArtwork
+import com.tidalmusic.player.ui.components.ConnectedDeviceChip
+import com.tidalmusic.player.ui.components.LiveWaveform
 import com.tidalmusic.player.ui.components.PlaybackControls
 import com.tidalmusic.player.ui.components.PlaybackProgressSlider
 import com.tidalmusic.player.ui.components.PlayingGradientBackdrop
@@ -254,8 +256,24 @@ fun NowPlayingScreen(
 
             Spacer(Modifier.height(8.dp))
 
+            // Live visualizer: bars rise and fall with the real decoded amplitude at the
+            // playhead; frozen while paused.
+            LiveWaveform(
+                song = song,
+                durationMs = progress.durationMs,
+                positionMs = progress.positionMs,
+                isPlaying = state.isPlaying,
+                playbackSpeed = state.playbackSpeed,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+            )
+
+            Spacer(Modifier.height(8.dp))
+
             PlaybackControls(
                 isPlaying = state.isPlaying,
+                isBuffering = state.isBuffering,
                 shuffleEnabled = state.shuffleEnabled,
                 repeatMode = state.repeatMode,
                 enabled = true,
@@ -311,6 +329,9 @@ fun NowPlayingScreen(
                     onClick = onShare,
                 )
             }
+
+            // Advanced connected-device pill: shows when headphones/Bluetooth carry the audio.
+            ConnectedDeviceChip()
 
             Spacer(Modifier.height(24.dp))
             } else {

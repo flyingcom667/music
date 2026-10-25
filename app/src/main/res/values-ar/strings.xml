@@ -391,4 +391,15 @@
     <string name="settings_language_system">لغة النظام</string>
     <string name="settings_language_english">English</string>
     <string name="settings_language_persian">فارسی</string>
+    <string name="editor_waveform_description">الموجة الصوتية للملف. اسحب مقبضي الحدود لتحديد نطاق الاقتطاع، واضغط لتحريك موضع المعاينة.</string>
+    <string name="editor_waveform_analyzing">جارٍ تحليل الموجة الصوتية…</string>
+    <string name="output_wired_headphones">سماعات سلكية</string>
+    <string name="output_bluetooth_headphones">سماعات بلوتوث</string>
+    <string name="output_bluetooth_speaker">مكبر صوت بلوتوث</string>
+    <string name="output_hearing_aid">جهاز مساعدة سمعية</string>
+    <string name="output_speaker">مكبر صوت الهاتف</string>
+    <string name="live_waveform_description">موجة صوتية حية: ترتفع الأشرطة وتنخفض مع درجة صوت الموسيقى عند موضع التشغيل.</string>
+    <string name="favorites_title">المفضلة</string>
+    <string name="favorites_empty_title">لا توجد مفضلات بعد</string>
+    <string name="favorites_empty_body">اضغط على رمز القلب لأي مقطع وسيكون منتظرك هنا.</string>
 </resources>

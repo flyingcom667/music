@@ -33,6 +33,9 @@ object Routes {
     const val EDITOR = "editor/{songId}"
     const val EDITOR_ID_ARG = "songId"
 
+    /** The dedicated favorites list. */
+    const val FAVORITES = "favorites"
+
     /** Collection browsers. */
     const val ALBUMS = "albums"
     const val ARTISTS = "artists"

@@ -1,6 +1,7 @@
 package com.tidalmusic.player.ui.components
 
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -26,6 +27,7 @@ import androidx.compose.material.icons.rounded.RepeatOne
 import androidx.compose.material.icons.rounded.Shuffle
 import androidx.compose.material.icons.rounded.SkipNext
 import androidx.compose.material.icons.rounded.SkipPrevious
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButtonDefaults
@@ -47,12 +49,15 @@ import com.tidalmusic.player.domain.model.RepeatMode
 /**
  * The main transport row: shuffle, previous, play/pause, next and repeat.
  *
- * Every control answers with a springy bounce and the play/pause icon swaps with a
- * scale-and-fade transition, so the player feels responsive and modern.
+ * Every control answers with a springy bounce (suppressed when system animations are
+ * disabled), shuffle/repeat tint between states with an animated colour, and the big
+ * button swaps play/pause — or shows buffering — through a scale-and-fade transition
+ * driven by the real playback state, never by the click alone.
  */
 @Composable
 fun PlaybackControls(
     isPlaying: Boolean,
+    isBuffering: Boolean,
     shuffleEnabled: Boolean,
     repeatMode: RepeatMode,
     enabled: Boolean,
@@ -67,6 +72,7 @@ fun PlaybackControls(
 ) {
     val activeTint = MaterialTheme.colorScheme.primary
     val inactiveTint = MaterialTheme.colorScheme.onSurfaceVariant
+    val reducedMotion = rememberReducedMotion()
 
     val repeatLabel = when (repeatMode) {
         RepeatMode.OFF -> stringResource(R.string.action_repeat_off)
@@ -76,6 +82,17 @@ fun PlaybackControls(
     val shuffleLabel = stringResource(R.string.action_shuffle)
     val onLabel = stringResource(R.string.state_on)
     val offLabel = stringResource(R.string.state_off)
+
+    val shuffleTint by animateColorAsState(
+        targetValue = if (shuffleEnabled) activeTint else inactiveTint,
+        animationSpec = tween(durationMillis = 180),
+        label = "shuffleTint",
+    )
+    val repeatTint by animateColorAsState(
+        targetValue = if (repeatMode == RepeatMode.OFF) inactiveTint else activeTint,
+        animationSpec = tween(durationMillis = 180),
+        label = "repeatTint",
+    )
 
     Row(
         modifier = modifier,
@@ -92,7 +109,7 @@ fun PlaybackControls(
             Icon(
                 imageVector = Icons.Rounded.Shuffle,
                 contentDescription = shuffleLabel,
-                tint = if (shuffleEnabled) activeTint else inactiveTint,
+                tint = shuffleTint,
             )
         }
 
@@ -107,6 +124,8 @@ fun PlaybackControls(
 
         AnimatedPlayPauseButton(
             isPlaying = isPlaying,
+            isBuffering = isBuffering,
+            reducedMotion = reducedMotion,
             enabled = enabled,
             onClick = onPlayPause,
         )
@@ -130,7 +149,7 @@ fun PlaybackControls(
             Icon(
                 imageVector = if (repeatMode == RepeatMode.ONE) Icons.Rounded.RepeatOne else Icons.Rounded.Repeat,
                 contentDescription = stringResource(R.string.action_repeat),
-                tint = if (repeatMode == RepeatMode.OFF) inactiveTint else activeTint,
+                tint = repeatTint,
             )
         }
     }
@@ -148,8 +167,9 @@ private fun SkipButton(
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
+    val reducedMotion = rememberReducedMotion()
     val scale by animateFloatAsState(
-        targetValue = if (pressed) 0.86f else 1f,
+        targetValue = if (pressed && !reducedMotion) 0.86f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMediumLow,
@@ -181,17 +201,25 @@ private fun SkipButton(
     }
 }
 
-/** The big play/pause button: the icon swaps with a springy scale-and-fade transition. */
+/**
+ * The big play/pause button.
+ *
+ * The icon is driven by the playback engine's state: buffering shows a spinner, playing
+ * shows pause, paused shows play — the swap animates with a springy scale-and-fade so
+ * rapid taps can never flicker a stale icon past its state.
+ */
 @Composable
 private fun AnimatedPlayPauseButton(
     isPlaying: Boolean,
+    isBuffering: Boolean,
+    reducedMotion: Boolean,
     enabled: Boolean,
     onClick: () -> Unit,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
     val scale by animateFloatAsState(
-        targetValue = if (pressed) 0.9f else 1f,
+        targetValue = if (pressed && !reducedMotion) 0.9f else 1f,
         animationSpec = spring(
             dampingRatio = Spring.DampingRatioMediumBouncy,
             stiffness = Spring.StiffnessMediumLow,
@@ -217,7 +245,7 @@ private fun AnimatedPlayPauseButton(
         ),
     ) {
         AnimatedContent(
-            targetState = isPlaying,
+            targetState = Triple(isPlaying, isBuffering, reducedMotion),
             transitionSpec = {
                 (
                     scaleIn(
@@ -233,14 +261,23 @@ private fun AnimatedPlayPauseButton(
                     )
             },
             label = "playPauseSwap",
-        ) { playing ->
-            Icon(
-                imageVector = if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
-                contentDescription = stringResource(
-                    if (playing) R.string.action_pause else R.string.action_play,
-                ),
-                modifier = Modifier.size(32.dp),
-            )
+        ) { (playing, buffering, noMotion) ->
+            if (buffering) {
+                CircularProgressIndicator(
+                    modifier = Modifier.size(28.dp),
+                    strokeWidth = 3.dp,
+                    color = MaterialTheme.colorScheme.onSecondary,
+                )
+            } else {
+                Icon(
+                    imageVector = if (playing) Icons.Rounded.Pause else Icons.Rounded.PlayArrow,
+                    contentDescription = stringResource(
+                        if (playing) R.string.action_pause else R.string.action_play,
+                    ),
+                    modifier = Modifier.size(32.dp),
+                )
+            }
         }
     }
 }
+

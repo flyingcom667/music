@@ -13,6 +13,7 @@ import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.PlaylistAdd
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.Stop
 import androidx.compose.material.icons.rounded.Timer
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -42,6 +43,7 @@ fun PlayerControlsSheet(
     onDismiss: () -> Unit,
     onPlaybackSpeed: (Float) -> Unit,
     onSleepTimer: () -> Unit,
+    onStopPlayback: () -> Unit,
     onOpenQueue: () -> Unit,
     onToggleFavorite: () -> Unit,
     onAddToPlaylist: () -> Unit,
@@ -81,6 +83,11 @@ fun PlayerControlsSheet(
                 icon = { Icon(Icons.AutoMirrored.Rounded.QueueMusic, null) },
                 label = stringResource(R.string.action_queue),
                 onClick = onOpenQueue,
+            )
+            SheetRow(
+                icon = { Icon(Icons.Rounded.Stop, null) },
+                label = stringResource(R.string.action_stop_playback),
+                onClick = onStopPlayback,
             )
             SheetRow(
                 icon = {

@@ -19,6 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Album
 import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Search
@@ -69,6 +71,7 @@ fun HomeScreen(
     onOpenAlbums: () -> Unit,
     onOpenArtists: () -> Unit,
     onOpenRecordings: () -> Unit,
+    onOpenFavorites: () -> Unit,
     onOpenSearch: () -> Unit,
     onOpenSettings: () -> Unit,
     onBrowseLibrary: () -> Unit,
@@ -88,6 +91,24 @@ fun HomeScreen(
                 onViewModeChange = onViewModeChange,
                 onOpenSearch = onOpenSearch,
                 onOpenSettings = onOpenSettings,
+            )
+        }
+
+        // The favorites cube: a bold standalone tile opening ALL favorite songs on their
+        // own screen — favorites and recently played never merge.
+        item(key = "favorites-cube") {
+            FavoritesCube(
+                count = favoriteSongs.size,
+                onClick = onOpenFavorites,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 6.dp),
+            )
+        }
+
+        item(key = "browse") {
+            BrowseSection(
+                onOpenAlbums = onOpenAlbums,
+                onOpenArtists = onOpenArtists,
+                onOpenRecordings = onOpenRecordings,
             )
         }
 
@@ -196,6 +217,61 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+/** The favorites cube: a bold gradient tile with the heart and the live count. */
+@Composable
+private fun FavoritesCube(
+    count: Int,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .background(
+                brush = androidx.compose.ui.graphics.Brush.linearGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.primary,
+                        MaterialTheme.colorScheme.secondary,
+                    ),
+                ),
+                shape = RoundedCornerShape(24.dp),
+            )
+            .combinedClickable(onClick = onClick)
+            .padding(horizontal = 20.dp, vertical = 18.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        androidx.compose.material3.Surface(
+            shape = RoundedCornerShape(18.dp),
+            color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.18f),
+        ) {
+            Icon(
+                imageVector = Icons.Rounded.Favorite,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onPrimary,
+                modifier = Modifier.padding(10.dp),
+            )
+        }
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.home_favorite_songs),
+                style = MaterialTheme.typography.titleMedium,
+                color = MaterialTheme.colorScheme.onPrimary,
+            )
+            Text(
+                text = stringResource(R.string.folders_song_count, count),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.85f),
+            )
+        }
+        Icon(
+            imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onPrimary,
+        )
     }
 }
 

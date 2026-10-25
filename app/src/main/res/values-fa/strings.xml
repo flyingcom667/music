@@ -391,4 +391,15 @@
     <string name="settings_language_system">زبان سیستم</string>
     <string name="settings_language_english">English</string>
     <string name="settings_language_persian">فارسی</string>
+    <string name="editor_waveform_description">شکل موج صدا. دستگیره‌های مرزی را برای تعیین محدوده برش بکشید و برای جابه‌جایی پیش‌نمایش ضربه بزنید.</string>
+    <string name="editor_waveform_analyzing">در حال تحلیل شکل موج…</string>
+    <string name="output_wired_headphones">هدفون سیمی</string>
+    <string name="output_bluetooth_headphones">هدفون بلوتوث</string>
+    <string name="output_bluetooth_speaker">اسپیکر بلوتوث</string>
+    <string name="output_hearing_aid">دستگاه کمکی شنوایی</string>
+    <string name="output_speaker">بلندگوی گوشی</string>
+    <string name="live_waveform_description">شکل موج زنده: میله‌ها با بلندی موسیقی در محل پخش بالا و پایین می‌روند.</string>
+    <string name="favorites_title">علاقه‌مندی‌ها</string>
+    <string name="favorites_empty_title">هنوز علاقه‌مندی‌ای نیست</string>
+    <string name="favorites_empty_body">روی نماد قلب هر آهنگ ضربه بزنید تا اینجا منتظرتان باشد.</string>
 </resources>

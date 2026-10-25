@@ -21,16 +21,20 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -50,6 +54,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -76,6 +81,7 @@ import com.tidalmusic.player.ui.components.TidalTextButton
 import com.tidalmusic.player.ui.collection.AlbumsScreen
 import com.tidalmusic.player.ui.collection.ArtistsScreen
 import com.tidalmusic.player.ui.collection.RecordingsScreen
+import com.tidalmusic.player.ui.favorites.FavoritesScreen
 import com.tidalmusic.player.ui.folders.FoldersScreen
 import com.tidalmusic.player.ui.home.HomeScreen
 import com.tidalmusic.player.ui.library.LibraryScreen
@@ -263,8 +269,6 @@ fun MusicApp(
     var showAudioRouteWarning by remember { mutableStateOf(false) }
     var openLibrarySearch by remember { mutableStateOf(false) }
 
-    // The library list state lives here so it survives switching tabs and destinations.
-    val libraryListState = rememberLazyListState()
     val consentLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult(),
     ) { result ->
@@ -390,7 +394,16 @@ fun MusicApp(
         onDispose { audioManager.unregisterAudioDeviceCallback(callback) }
     }
 
+    // Rapid-tap guard: a navigation is ignored while the previous one is still settling,
+    // so double taps can never push two destinations.
+    var navigationLocked by remember { mutableStateOf(false) }
+    LaunchedEffect(currentRoute) {
+        if (currentRoute != null) navigationLocked = false
+    }
+
     fun navigateToTopLevel(route: String) {
+        if (navigationLocked || currentRoute == route) return
+        navigationLocked = true
         navController.navigate(route) {
             popUpTo(TopLevelDestination.HOME.route) { saveState = true }
             launchSingleTop = true
@@ -427,13 +440,25 @@ fun MusicApp(
                         tonalElevation = 0.dp,
                     ) {
                         TopLevelDestination.entries.forEach { destination ->
+                            val selected = currentRoute == destination.route
+                            // The selected tab icon lifts with a springy scale (NavigationButton
+                            // animation); unselected tabs settle back to rest.
+                            val iconScale by animateFloatAsState(
+                                targetValue = if (selected) 1.15f else 1f,
+                                animationSpec = spring(
+                                    dampingRatio = Spring.DampingRatioMediumBouncy,
+                                    stiffness = Spring.StiffnessMediumLow,
+                                ),
+                                label = "navScale",
+                            )
                             NavigationBarItem(
-                                selected = currentRoute == destination.route,
+                                selected = selected,
                                 onClick = { navigateToTopLevel(destination.route) },
                                 icon = {
                                     Icon(
                                         imageVector = destination.icon,
                                         contentDescription = null,
+                                        modifier = Modifier.scale(iconScale),
                                     )
                                 },
                                 label = { Text(stringResource(destination.labelRes)) },
@@ -456,7 +481,9 @@ fun MusicApp(
                         animationSpec = tween(MotionTokens.PlayerTransitionMs),
                     ) { it } + fadeIn(animationSpec = tween(MotionTokens.PlayerTransitionMs))
                 } else {
-                    fadeIn(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
+                    slideInHorizontally(
+                        animationSpec = tween(MotionTokens.ScreenSlideMs),
+                    ) { it / 6 } + fadeIn(animationSpec = tween(MotionTokens.ScreenSlideMs))
                 }
             },
             exitTransition = {
@@ -467,7 +494,9 @@ fun MusicApp(
                         animationSpec = tween(MotionTokens.PlayerTransitionMs),
                     ) + fadeOut(animationSpec = tween(MotionTokens.PlayerTransitionMs))
                 } else {
-                    fadeOut(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
+                    slideOutHorizontally(
+                        animationSpec = tween(MotionTokens.ScreenSlideMs),
+                    ) { -it / 10 } + fadeOut(animationSpec = tween(MotionTokens.ScreenSlideMs))
                 }
             },
             popEnterTransition = {
@@ -477,7 +506,9 @@ fun MusicApp(
                         animationSpec = tween(MotionTokens.PlayerTransitionMs),
                     ) + fadeIn(animationSpec = tween(MotionTokens.PlayerTransitionMs))
                 } else {
-                    fadeIn(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
+                    slideInHorizontally(
+                        animationSpec = tween(MotionTokens.ScreenSlideMs),
+                    ) { -it / 10 } + fadeIn(animationSpec = tween(MotionTokens.ScreenSlideMs))
                 }
             },
             popExitTransition = {
@@ -486,7 +517,9 @@ fun MusicApp(
                         animationSpec = tween(MotionTokens.PlayerTransitionMs),
                     ) { it } + fadeOut(animationSpec = tween(MotionTokens.PlayerTransitionMs))
                 } else {
-                    fadeOut(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
+                    slideOutHorizontally(
+                        animationSpec = tween(MotionTokens.ScreenSlideMs),
+                    ) { it / 6 } + fadeOut(animationSpec = tween(MotionTokens.ScreenSlideMs))
                 }
             },
         ) {
@@ -512,6 +545,7 @@ fun MusicApp(
                     onOpenAlbums = { navController.navigate(Routes.ALBUMS) },
                     onOpenArtists = { navController.navigate(Routes.ARTISTS) },
                     onOpenRecordings = { navController.navigate(Routes.RECORDINGS) },
+                    onOpenFavorites = { navController.navigate(Routes.FAVORITES) },
                     onPlayRecent = { song ->
                         val songs = libraryState.recentlyPlayed
                         val index = songs.indexOfFirst { it.id == song.id }
@@ -534,7 +568,6 @@ fun MusicApp(
             composable(TopLevelDestination.LIBRARY.route) {
                 LibraryScreen(
                     state = libraryState,
-                    listState = libraryListState,
                     currentSongId = playbackState.currentSong?.id,
                     isPlaying = playbackState.isPlaying,
                     density = settings.density,
@@ -636,6 +669,18 @@ fun MusicApp(
                     onDeletePlaylist = { deletePlaylist = it },
                     onSharePlaylistSongs = shareSongs,
                     onShareEmptyPlaylist = { shareEmptyPlaylist = it },
+                    onSongOverflow = songActionsVm::select,
+                )
+            }
+
+            composable(Routes.FAVORITES) {
+                FavoritesScreen(
+                    songs = libraryState.allSongs.values.toList(),
+                    favoriteIds = libraryState.favorites,
+                    currentSongId = playbackState.currentSong?.id,
+                    isPlaying = playbackState.isPlaying,
+                    onBack = { navController.popBackStack() },
+                    onPlaySongs = { songs, index -> playerVm.playSongs(songs, index) },
                     onSongOverflow = songActionsVm::select,
                 )
             }
@@ -802,6 +847,10 @@ fun MusicApp(
             onSleepTimer = {
                 showControlsSheet = false
                 showSleepTimer = true
+            },
+            onStopPlayback = {
+                showControlsSheet = false
+                playerVm.stop()
             },
             onOpenQueue = {
                 showControlsSheet = false

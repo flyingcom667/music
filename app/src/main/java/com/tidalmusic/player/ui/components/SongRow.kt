@@ -21,6 +21,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,17 +75,19 @@ fun SongRow(
             .fillMaxWidth()
             .defaultMinSize(minHeight = 48.dp)
             .height(rowHeight)
+            // Rounded item container: every song row is its own soft card (the "radius"
+            // styling), lifted slightly from the background in both themes.
+            .padding(horizontal = 12.dp, vertical = 3.dp)
+            .clip(RoundedCornerShape(18.dp))
             .then(
                 if (isSelected) {
                     Modifier
-                        .padding(horizontal = 8.dp)
-                        .clip(MaterialTheme.shapes.medium)
-                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f))
-                        .padding(horizontal = 12.dp)
+                        .background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
                 } else {
-                    Modifier.padding(horizontal = 20.dp)
+                    Modifier.background(MaterialTheme.colorScheme.surfaceContainerLow)
                 },
             )
+            .padding(horizontal = 8.dp)
             .semantics {
                 if (selectionMode) {
                     selected = isSelected

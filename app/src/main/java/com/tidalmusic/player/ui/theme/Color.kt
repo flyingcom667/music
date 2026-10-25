@@ -38,19 +38,20 @@ private val LightOnSurfaceVariant = Color(0xFF33627D)
 private val LightOutline = Color(0xFF6D9DB4)
 private val LightOutlineVariant = Color(0xFFB4E3F0)
 
-// Dark theme: a stepped ocean ramp that stays clearly blue instead of collapsing into
-// flat grey-black. Each step is one lift lighter than the background so cards, sheets
-// and dialogs read as separate layers.
-private val DarkBackground = Color(0xFF03045E)
-private val DarkOnBackground = Color(0xFFDCF4FC)
-private val DarkSurfaceContainerLowest = Color(0xFF02031C)
-private val DarkSurfaceContainerLow = Color(0xFF071157)
-private val DarkSurfaceContainer = Color(0xFF0A1A6E)
-private val DarkSurfaceContainerHigh = Color(0xFF122480)
-private val DarkSurfaceContainerHighest = Color(0xFF1B2F96)
-private val DarkOnSurfaceVariant = Color(0xFFA5D4E6)
-private val DarkOutline = Color(0xFF6FA3C9)
-private val DarkOutlineVariant = Color(0xFF274F87)
+// Dark theme: a sophisticated gray-black ramp, never pure black. Surfaces step up from
+// the #121212 background through #1C1C1C/#242424 cards so sheets, dialogs and cards read
+// as separate layers; dividers sit at #333333 and text at #F5F5F5/#B0B0B0. The ocean
+// cyan stays as the brand accent on top of the neutral base.
+private val DarkBackground = Color(0xFF121212)
+private val DarkOnBackground = Color(0xFFF5F5F5)
+private val DarkSurfaceContainerLowest = Color(0xFF0D0D0D)
+private val DarkSurfaceContainerLow = Color(0xFF1C1C1C)
+private val DarkSurfaceContainer = Color(0xFF202020)
+private val DarkSurfaceContainerHigh = Color(0xFF242424)
+private val DarkSurfaceContainerHighest = Color(0xFF2E2E2E)
+private val DarkOnSurfaceVariant = Color(0xFFB0B0B0)
+private val DarkOutline = Color(0xFF4A4A4A)
+private val DarkOutlineVariant = Color(0xFF333333)
 
 
 // ---------------------------------------------------------------------------------------
@@ -101,25 +102,25 @@ internal val LightOnErrorContainer = Color(0xFF410E0B)
 // ---------------------------------------------------------------------------------------
 internal val DarkPrimary = OceanCyan
 internal val DarkOnPrimary = OceanNavy
-internal val DarkPrimaryContainerColor = Color(0xFF085E7D)
+internal val DarkPrimaryContainerColor = Color(0xFF004C66)
 internal val DarkOnPrimaryContainer = OceanFoam
 internal val DarkInversePrimary = OceanBlue
 
 internal val DarkSecondary = OceanLightCyan
 internal val DarkOnSecondary = OceanNavy
-internal val DarkSecondaryContainer = Color(0xFF0E4A66)
+internal val DarkSecondaryContainer = Color(0xFF00394D)
 internal val DarkOnSecondaryContainer = OceanFoam
 
 internal val DarkTertiary = OceanLightCyan
 internal val DarkOnTertiary = OceanNavy
-internal val DarkTertiaryContainerColor = Color(0xFF0E4A66)
+internal val DarkTertiaryContainerColor = Color(0xFF00394D)
 internal val DarkOnTertiaryContainer = OceanFoam
 
 internal val DarkBackgroundColor = DarkBackground
 internal val DarkOnBackgroundColor = DarkOnBackground
 internal val DarkSurfaceColor = DarkBackground
 internal val DarkOnSurfaceColor = DarkOnBackground
-internal val DarkSurfaceVariantColor = Color(0xFF0A1560)
+internal val DarkSurfaceVariantColor = Color(0xFF1E1E1E)
 
 internal val DarkSurfaceContainerLowestColor = DarkSurfaceContainerLowest
 internal val DarkSurfaceContainerLowColor = DarkSurfaceContainerLow
@@ -127,8 +128,8 @@ internal val DarkSurfaceContainerColor = DarkSurfaceContainer
 internal val DarkSurfaceContainerHighColor = DarkSurfaceContainerHigh
 internal val DarkSurfaceContainerHighestColor = DarkSurfaceContainerHighest
 
-internal val DarkInverseSurface = Color(0xFFDCF4FC)
-internal val DarkInverseOnSurface = Color(0xFF06134A)
+internal val DarkInverseSurface = Color(0xFFF5F5F5)
+internal val DarkInverseOnSurface = Color(0xFF1C1C1C)
 internal val DarkScrim = Color(0xFF000000)
 
 internal val DarkOnSurfaceVariantColor = DarkOnSurfaceVariant

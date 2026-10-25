@@ -396,4 +396,15 @@
     <string name="settings_language_system">System default</string>
     <string name="settings_language_english">English</string>
     <string name="settings_language_persian">فارسی</string>
+    <string name="editor_waveform_description">Waveform of the audio. Drag the boundary handles to set the trim range; tap to move the preview position.</string>
+    <string name="editor_waveform_analyzing">Analyzing audio waveform…</string>
+    <string name="output_wired_headphones">Wired headphones</string>
+    <string name="output_bluetooth_headphones">Bluetooth headphones</string>
+    <string name="output_bluetooth_speaker">Bluetooth speaker</string>
+    <string name="output_hearing_aid">Hearing device</string>
+    <string name="output_speaker">Phone speaker</string>
+    <string name="live_waveform_description">Live audio waveform: bars follow the loudness of the music at the playhead.</string>
+    <string name="favorites_title">Favorites</string>
+    <string name="favorites_empty_title">No favorites yet</string>
+    <string name="favorites_empty_body">Tap the heart on any song and it will be waiting for you here.</string>
 </resources>

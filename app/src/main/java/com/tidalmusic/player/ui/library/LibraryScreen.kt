@@ -17,9 +17,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.animation.Crossfade
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -56,7 +60,6 @@ import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -106,7 +109,6 @@ import kotlinx.coroutines.launch
 @Composable
 fun LibraryScreen(
     state: LibraryUiState,
-    listState: LazyListState,
     currentSongId: Long?,
     isPlaying: Boolean,
     density: ListDensity,
@@ -132,7 +134,10 @@ fun LibraryScreen(
     onExitAddMode: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    var selectedTab by rememberSaveable { mutableIntStateOf(0) }
+    // The two library tabs live in a HorizontalPager: swiping left/right switches tabs
+    // (direction-aware, so it works in RTL too) and stays in sync with the tab row.
+    val pagerState = rememberPagerState(initialPage = 0) { 2 }
+    val selectedTab = pagerState.currentPage
     var searchExpanded by remember { mutableStateOf(false) }
     // Entering the add-to-playlist flow switches the screen into selection mode so the
     // user can immediately start ticking songs.
@@ -141,8 +146,7 @@ fun LibraryScreen(
     LaunchedEffect(addPlaylistName) {
         if (addPlaylistName != null) {
             selectionMode = true
-            selectedTab = 0
-            listState.scrollToItem(0)
+            pagerState.scrollToPage(0)
         }
     }
     var selectedSongIds by rememberSaveable(
@@ -213,9 +217,12 @@ fun LibraryScreen(
     }
 
     val songs = if (selectedTab == 0) state.songs else state.recentlyAdded
-    val titleHiddenByScroll by remember(listState) {
+    val allSongsListState = rememberLazyListState()
+    val recentListState = rememberLazyListState()
+    val activeListState = if (selectedTab == 0) allSongsListState else recentListState
+    val titleHiddenByScroll by remember(activeListState) {
         derivedStateOf {
-            listState.firstVisibleItemIndex > 0
+            activeListState.firstVisibleItemIndex > 0
         }
     }
     Box(
@@ -426,8 +433,7 @@ fun LibraryScreen(
             Tab(
                 selected = selectedTab == 0,
                 onClick = {
-                    selectedTab = 0
-                    scope.launch { listState.scrollToItem(0) }
+                    scope.launch { pagerState.animateScrollToPage(0) }
                     focusManager.clearFocus()
                     keyboardController?.hide()
                 },
@@ -436,8 +442,7 @@ fun LibraryScreen(
             Tab(
                 selected = selectedTab == 1,
                 onClick = {
-                    selectedTab = 1
-                    scope.launch { listState.scrollToItem(0) }
+                    scope.launch { pagerState.animateScrollToPage(1) }
                     focusManager.clearFocus()
                     keyboardController?.hide()
                 },
@@ -515,14 +520,23 @@ fun LibraryScreen(
                 if (state.isRefreshing) {
                     InlineLoadingRow(label = stringResource(R.string.library_refreshing))
                 }
-                if (viewMode == ViewMode.COVER) {
-                    SongGrid(
-                        songs = songs,
+                HorizontalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize(),
+                ) { page ->
+                    val pageSongs = if (page == 0) state.songs else state.recentlyAdded
+                    val pageListState = if (page == 0) allSongsListState else recentListState
+                    LibrarySongPage(
+                        songs = pageSongs,
+                        listState = pageListState,
+                        viewMode = viewMode,
+                        density = density,
+                        showArtwork = showArtwork,
+                        favorites = state.favorites,
                         currentSongId = currentSongId,
                         isPlaying = isPlaying,
-                        isSelected = { it in selectedSongIds },
                         selectionMode = selectionMode,
-                        onPlay = { index -> onPlay(songs, index) },
+                        selectedSongIds = selectedSongIds,
                         onToggleSelect = { id ->
                             selectedSongIds = if (id in selectedSongIds) {
                                 selectedSongIds - id
@@ -531,56 +545,9 @@ fun LibraryScreen(
                             }
                         },
                         onEnterSelection = { selectionMode = true },
-                        onOverflow = onSongOverflow,
-                        modifier = Modifier.fillMaxSize(),
-                        contentPadding = PaddingValues(top = 4.dp, bottom = 32.dp),
+                        onPlay = onPlay,
+                        onSongOverflow = onSongOverflow,
                     )
-                } else {
-                    Box(modifier = Modifier.fillMaxSize()) {
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(
-                                top = 4.dp,
-                                bottom = 32.dp,
-                            ),
-                        ) {
-                            itemsIndexed(items = songs, key = { _, song -> song.id }) { index, song ->
-                                val checked = song.id in selectedSongIds
-                                SongRow(
-                                    song = song,
-                                    isCurrent = song.id == currentSongId,
-                                    isPlaying = isPlaying,
-                                    isFavorite = song.id in state.favorites,
-                                    showArtwork = showArtwork,
-                                    compact = density == ListDensity.COMPACT,
-                                    isSelected = checked,
-                                    selectionMode = selectionMode,
-                                    selectionCheckedLabel = stringResource(R.string.library_selected_item),
-                                    selectionUncheckedLabel = stringResource(R.string.library_not_selected_item),
-                                    onPlay = {
-                                        if (selectionMode) {
-                                            selectedSongIds = if (song.id in selectedSongIds) {
-                                                selectedSongIds - song.id
-                                            } else {
-                                                selectedSongIds + song.id
-                                            }
-                                        } else {
-                                            onPlay(songs, index)
-                                        }
-                                    },
-                                    onLongClick = {
-                                        if (!selectionMode) {
-                                            selectionMode = true
-                                        }
-                                        selectedSongIds = selectedSongIds + song.id
-                                    },
-                                    onOverflow = { onSongOverflow(song) },
-                                    overflowLabel = stringResource(R.string.action_more_options),
-                                )
-                            }
-                        }
-                    }
                 }
             }
         }
@@ -636,6 +603,91 @@ fun LibraryScreen(
                 }
             },
         )
+    }
+}
+
+/**
+ * One library tab page: the song list or cover grid for that tab.
+ *
+ * The view switch crossfades between the layouts, and list rows animate placement so
+ * hidden/removed tracks slide away instead of vanishing.
+ */
+@Composable
+private fun LibrarySongPage(
+    songs: List<Song>,
+    listState: LazyListState,
+    viewMode: ViewMode,
+    density: ListDensity,
+    showArtwork: Boolean,
+    favorites: Set<Long>,
+    currentSongId: Long?,
+    isPlaying: Boolean,
+    selectionMode: Boolean,
+    selectedSongIds: Set<Long>,
+    onToggleSelect: (Long) -> Unit,
+    onEnterSelection: () -> Unit,
+    onPlay: (List<Song>, Int) -> Unit,
+    onSongOverflow: (Song) -> Unit,
+) {
+    Crossfade(targetState = viewMode, label = "libraryViewMode") { mode ->
+        if (mode == ViewMode.COVER) {
+            SongGrid(
+                songs = songs,
+                currentSongId = currentSongId,
+                isPlaying = isPlaying,
+                isSelected = { it in selectedSongIds },
+                selectionMode = selectionMode,
+                onPlay = { index -> onPlay(songs, index) },
+                onToggleSelect = onToggleSelect,
+                onEnterSelection = onEnterSelection,
+                onOverflow = onSongOverflow,
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(top = 4.dp, bottom = 32.dp),
+            )
+        } else {
+            Box(modifier = Modifier.fillMaxSize()) {
+                LazyColumn(
+                    state = listState,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = PaddingValues(
+                        top = 4.dp,
+                        bottom = 32.dp,
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    itemsIndexed(items = songs, key = { _, song -> song.id }) { index, song ->
+                        SongRow(
+                            modifier = Modifier.animateItem(),
+                            song = song,
+                            isCurrent = song.id == currentSongId,
+                            isPlaying = isPlaying,
+                            isFavorite = song.id in favorites,
+                            showArtwork = showArtwork,
+                            compact = density == ListDensity.COMPACT,
+                            isSelected = song.id in selectedSongIds,
+                            selectionMode = selectionMode,
+                            selectionCheckedLabel = stringResource(R.string.library_selected_item),
+                            selectionUncheckedLabel = stringResource(R.string.library_not_selected_item),
+                            onPlay = {
+                                if (selectionMode) {
+                                    onToggleSelect(song.id)
+                                } else {
+                                    onPlay(songs, index)
+                                }
+                            },
+                            onLongClick = {
+                                if (!selectionMode) {
+                                    onEnterSelection()
+                                }
+                                onToggleSelect(song.id)
+                            },
+                            onOverflow = { onSongOverflow(song) },
+                            overflowLabel = stringResource(R.string.action_more_options),
+                        )
+                    }
+                }
+            }
+        }
     }
 }
 

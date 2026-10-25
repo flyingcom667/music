@@ -28,8 +28,10 @@ fun BouncingIconButton(
     val scale = remember { Animatable(1f) }
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
+    val reducedMotion = rememberReducedMotion()
 
     LaunchedEffect(pressed) {
+        if (reducedMotion) return@LaunchedEffect
         if (pressed) {
             scale.snapTo(0.86f)
         } else if (scale.value != 1f) {

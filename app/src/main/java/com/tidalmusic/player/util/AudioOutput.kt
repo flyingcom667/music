@@ -82,6 +82,106 @@ fun resolveAudioOutput(context: Context): AudioOutputKind {
     }
 }
 
+/** The device categories the "connected device" surfaces distinguish. */
+enum class OutputCategory { WIRED_HEADPHONES, BLUETOOTH_HEADPHONES, BLUETOOTH_SPEAKER, HEARING_AID, SPEAKER }
+
+/**
+ * Everything the system can honestly report about the currently active output.
+ *
+ * [deviceName] is the product name the platform publishes (blank when the device does
+ * not provide one); [category] is derived from the device type only.
+ */
+data class AudioOutputDetails(
+    val kind: AudioOutputKind,
+    val category: OutputCategory,
+    val deviceName: String?,
+)
+
+/**
+ * Inspects the active routes and describes the output the user is listening to.
+ * Bluetooth wins over wired, exactly like [resolveAudioOutput].
+ */
+fun resolveAudioOutputDetails(context: Context): AudioOutputDetails {
+    val audioManager = context.getSystemService(AudioManager::class.java)
+        ?: return AudioOutputDetails(AudioOutputKind.SPEAKER, OutputCategory.SPEAKER, null)
+    val outputs = audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+
+    fun categoryOf(type: Int): OutputCategory? = when (type) {
+        AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+        AudioDeviceInfo.TYPE_WIRED_HEADSET,
+        AudioDeviceInfo.TYPE_USB_HEADSET,
+        AudioDeviceInfo.TYPE_USB_DEVICE,
+        AudioDeviceInfo.TYPE_USB_ACCESSORY,
+        AudioDeviceInfo.TYPE_LINE_ANALOG,
+        AudioDeviceInfo.TYPE_LINE_DIGITAL,
+        -> OutputCategory.WIRED_HEADPHONES
+
+        AudioDeviceInfo.TYPE_BLUETOOTH_A2DP -> OutputCategory.BLUETOOTH_HEADPHONES
+        AudioDeviceInfo.TYPE_BLUETOOTH_SCO -> OutputCategory.BLUETOOTH_HEADPHONES
+
+        AudioDeviceInfo.TYPE_BLE_SPEAKER -> OutputCategory.BLUETOOTH_SPEAKER
+        AudioDeviceInfo.TYPE_HEARING_AID -> OutputCategory.HEARING_AID
+        else -> null
+    }
+
+    val bluetoothFirst = outputs.sortedBy { device ->
+        when (device.type) {
+            AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
+            AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
+            -> 0
+
+            AudioDeviceInfo.TYPE_BLE_HEADSET,
+            AudioDeviceInfo.TYPE_BLE_SPEAKER,
+            AudioDeviceInfo.TYPE_BLE_BROADCAST,
+            -> 1
+
+            AudioDeviceInfo.TYPE_HEARING_AID -> 2
+
+            AudioDeviceInfo.TYPE_WIRED_HEADPHONES,
+            AudioDeviceInfo.TYPE_WIRED_HEADSET,
+            AudioDeviceInfo.TYPE_USB_HEADSET,
+            AudioDeviceInfo.TYPE_USB_DEVICE,
+            AudioDeviceInfo.TYPE_USB_ACCESSORY,
+            -> 3
+
+            else -> 4
+        }
+    }
+    for (device in bluetoothFirst) {
+        val isBle = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S &&
+            (device.type == AudioDeviceInfo.TYPE_BLE_HEADSET ||
+                device.type == AudioDeviceInfo.TYPE_BLE_SPEAKER)
+        val isBleBroadcast = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+            device.type == AudioDeviceInfo.TYPE_BLE_BROADCAST
+        val isHearingAid = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P &&
+            device.type == AudioDeviceInfo.TYPE_HEARING_AID
+
+        val category = when {
+            device.type == AudioDeviceInfo.TYPE_BLUETOOTH_A2DP ||
+                device.type == AudioDeviceInfo.TYPE_BLUETOOTH_SCO ->
+                OutputCategory.BLUETOOTH_HEADPHONES
+
+            isBle -> if (device.type == AudioDeviceInfo.TYPE_BLE_SPEAKER) {
+                OutputCategory.BLUETOOTH_SPEAKER
+            } else {
+                OutputCategory.BLUETOOTH_HEADPHONES
+            }
+
+            isBleBroadcast -> OutputCategory.BLUETOOTH_SPEAKER
+            isHearingAid -> OutputCategory.HEARING_AID
+            else -> categoryOf(device.type) ?: continue
+        }
+        val name = device.productName?.toString()?.takeIf { it.isNotBlank() }
+        val kind = when (category) {
+            OutputCategory.WIRED_HEADPHONES -> AudioOutputKind.WIRED
+            OutputCategory.SPEAKER -> AudioOutputKind.SPEAKER
+            else -> AudioOutputKind.BLUETOOTH
+        }
+        return AudioOutputDetails(kind, category, name)
+    }
+    return AudioOutputDetails(AudioOutputKind.SPEAKER, OutputCategory.SPEAKER, null)
+}
+
 /** One connected Bluetooth audio output, as far as the platform reports it. */
 data class BluetoothDeviceInfo(
     val name: String,

@@ -50,6 +50,7 @@ import com.tidalmusic.player.ui.components.AlbumArtwork
 import com.tidalmusic.player.ui.components.BouncingIconButton
 import com.tidalmusic.player.ui.components.TidalAlertDialog
 import com.tidalmusic.player.ui.components.TidalTextButton
+import com.tidalmusic.player.ui.components.WaveformSelection
 import com.tidalmusic.player.ui.theme.LocalTidalSeekbarColor
 import com.tidalmusic.player.util.TimeFormat
 
@@ -66,6 +67,8 @@ fun AudioEditorScreen(
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val waveform by viewModel.waveform.collectAsStateWithLifecycle()
+    val previewPositionMs by viewModel.previewPositionMs.collectAsStateWithLifecycle()
     val song = state.song
 
     val exportWavLauncher = rememberLauncherForActivityResult(
@@ -139,6 +142,24 @@ fun AudioEditorScreen(
                     )
                 }
             }
+
+            // Telegram-style waveform from real decoded amplitudes: the accent portion is
+            // the preview position, the dimmed parts are outside the trim range, and the
+            // two boundary handles drag the cut points. Tap/drag seeks the preview.
+            WaveformSelection(
+                amplitudes = waveform,
+                durationMs = state.durationMs,
+                positionMs = previewPositionMs,
+                startMs = state.startMs,
+                endMs = state.endMs,
+                onSeek = viewModel::seekPreview,
+                onStartChange = viewModel::setStart,
+                onEndChange = viewModel::setEnd,
+                selectionEnabled = !state.combineMode,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(96.dp),
+            )
 
             EditorSectionTitle(stringResource(R.string.editor_trim_section))
             if (state.combineMode) {

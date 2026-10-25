@@ -1,5 +1,8 @@
 package com.tidalmusic.player.ui.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearOutSlowInEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,6 +13,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -22,16 +26,20 @@ import androidx.compose.ui.unit.dp
 import com.tidalmusic.player.R
 import com.tidalmusic.player.ui.theme.LocalTidalSeekbarColor
 import com.tidalmusic.player.util.TimeFormat
+import kotlin.math.abs
 
 /**
  * The seek bar with its current and total time.
  *
- * While the thumb is dragged the slider shows the dragged position, so the label follows the
- * finger instead of fighting the playback tick. The real position is only updated when the
- * drag finishes, which keeps seeking responsive on slow devices.
+ * Progress is animated (SeekBarAnimationAgent): a discrete jump — the user sought, or the
+ * track changed — sweeps smoothly to its target, while the regular twice-per-second
+ * position ticks snap directly so the bar never lags behind the audio engine. While the
+ * thumb is dragged the slider shows the dragged position; the real position is applied
+ * when the drag finishes. The value always converges to the actual playback state, so the
+ * display can never drift from — or move against — the engine.
  *
- * When [showSafeLevelMarker] is set (a Bluetooth or wired headphone is the active route) a red
- * line marks the unsafe listening level, so the limit is visible while seeking too.
+ * When [showSafeLevelMarker] is set (a Bluetooth or wired headphone is the active route) a
+ * red line marks the unsafe listening level on the track.
  */
 @Composable
 fun PlaybackProgressSlider(
@@ -44,15 +52,37 @@ fun PlaybackProgressSlider(
     val hasDuration = durationMs > 0L
     var dragging by remember { mutableStateOf(false) }
     var dragFraction by remember { mutableStateOf(0f) }
+    val reducedMotion = rememberReducedMotion()
 
     val playbackFraction = if (hasDuration) {
         (positionMs.toFloat() / durationMs.toFloat()).coerceIn(0f, 1f)
     } else {
         0f
     }
-    val sliderValue = if (dragging) dragFraction else playbackFraction
-    val displayedPosition = if (dragging) {
-        (dragFraction * durationMs).toLong()
+    val progress = remember { Animatable(playbackFraction) }
+
+    // Follow the engine: snap for regular ticks, sweep for discrete jumps.
+    LaunchedEffect(positionMs, durationMs) {
+        if (dragging || !hasDuration) return@LaunchedEffect
+        val target = playbackFraction
+        when {
+            reducedMotion || abs(target - progress.value) < 0.01f ->
+                progress.snapTo(target)
+
+            else -> progress.animateTo(
+                target,
+                tween(durationMillis = 320, easing = LinearOutSlowInEasing),
+            )
+        }
+    }
+    // While dragging, the thumb follows the finger exactly.
+    LaunchedEffect(dragging, dragFraction) {
+        if (dragging) progress.snapTo(dragFraction)
+    }
+
+    val sliderValue = progress.value
+    val displayedPosition = if (hasDuration) {
+        (sliderValue * durationMs).toLong()
     } else {
         positionMs.coerceAtLeast(0L)
     }
@@ -62,7 +92,7 @@ fun PlaybackProgressSlider(
 
     Column(modifier = modifier.fillMaxWidth()) {
         Slider(
-            value = sliderValue,
+            value = sliderValue.coerceIn(0f, 1f),
             onValueChange = { fraction ->
                 dragging = true
                 dragFraction = fraction
