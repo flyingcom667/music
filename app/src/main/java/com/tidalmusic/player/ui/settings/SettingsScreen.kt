@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.tidalmusic.player.R
+import com.tidalmusic.player.data.preferences.AppLanguage
 import com.tidalmusic.player.data.preferences.AppPreferences
 import com.tidalmusic.player.data.preferences.ListDensity
 import com.tidalmusic.player.data.preferences.ThemeMode
@@ -75,8 +76,10 @@ fun SettingsScreen(
     onOpenSystemVolume: () -> Unit,
     batteryExempt: Boolean,
     onRequestBatteryExemption: () -> Unit,
+    onAppLanguageChange: (AppLanguage) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var languageDialog by remember { mutableStateOf(false) }
     var themeDialog by remember { mutableStateOf(false) }
     var densityDialog by remember { mutableStateOf(false) }
     var repeatDialog by remember { mutableStateOf(false) }
@@ -112,6 +115,13 @@ fun SettingsScreen(
         ) {
             item(key = "appearance-header") {
                 SectionHeader(title = stringResource(R.string.settings_appearance))
+            }
+            item(key = "language") {
+                SettingsRow(
+                    title = stringResource(R.string.settings_language),
+                    summary = stringResource(settings.appLanguage.labelRes()),
+                    onClick = { languageDialog = true },
+                )
             }
             item(key = "theme") {
                 SettingsRow(
@@ -285,6 +295,20 @@ fun SettingsScreen(
                 )
             }
         }
+    }
+
+    if (languageDialog) {
+        ChoiceDialog(
+            title = stringResource(R.string.settings_language),
+            options = AppLanguage.entries,
+            selected = settings.appLanguage,
+            label = { stringResource(it.labelRes()) },
+            onSelect = {
+                onAppLanguageChange(it)
+                languageDialog = false
+            },
+            onDismiss = { languageDialog = false },
+        )
     }
 
     if (themeDialog) {
@@ -478,6 +502,12 @@ private fun <T> ChoiceDialog(
             }
         },
     )
+}
+
+internal fun AppLanguage.labelRes(): Int = when (this) {
+    AppLanguage.SYSTEM -> R.string.settings_language_system
+    AppLanguage.ENGLISH -> R.string.settings_language_english
+    AppLanguage.PERSIAN -> R.string.settings_language_persian
 }
 
 internal fun ThemeMode.labelRes(): Int = when (this) {

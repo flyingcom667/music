@@ -3,6 +3,7 @@ package com.tidalmusic.player.ui.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import com.tidalmusic.player.di.AppContainer
+import com.tidalmusic.player.domain.model.Song
 
 /**
  * Creates every screen model from the single [AppContainer].
@@ -54,5 +55,18 @@ class AppViewModelFactory(private val container: AppContainer) : ViewModelProvid
                 playlistId = playlistId,
                 repository = container.userLibraryRepository,
             ) as T
+        }
+
+    /** The editor is scoped to the song being edited and the library it can combine with. */
+    fun editorFactory(song: Song, candidates: List<Song>): ViewModelProvider.Factory =
+        object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T =
+                com.tidalmusic.player.audioeditor.AudioEditorViewModel(
+                    appContext = container.androidContext(),
+                    engine = container.audioEditorEngine,
+                    song = song,
+                    candidates = candidates,
+                ) as T
         }
 }

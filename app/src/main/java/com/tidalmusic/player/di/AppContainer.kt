@@ -28,6 +28,13 @@ class AppContainer(context: Context) {
 
     private val appContext: Context = context.applicationContext
 
+    /** The audio editing engine (stateless); used by the editor screen model. */
+    val audioEditorEngine: com.tidalmusic.player.audioeditor.AudioEditorEngine =
+        com.tidalmusic.player.audioeditor.AudioEditorEngine()
+
+    /** The application context, for screen models that touch the system (SAF exports). */
+    fun androidContext(): Context = appContext
+
     /** Lives as long as the process; used for work that must outlive a screen. */
     val applicationScope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 

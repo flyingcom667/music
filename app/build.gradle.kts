@@ -25,8 +25,8 @@ android {
         applicationId = "com.tidalmusic.player"
         minSdk = 26
         targetSdk = 37
-        versionCode = 5
-        versionName = "1.2.4"
+        versionCode = 6
+        versionName = "1.3.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true

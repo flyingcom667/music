@@ -17,9 +17,12 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Album
+import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.rounded.GridView
 import androidx.compose.material.icons.rounded.MusicNote
 import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.ViewList
 import androidx.compose.material3.Button
@@ -63,6 +66,9 @@ fun HomeScreen(
     onPlayFavorite: (Song) -> Unit,
     onSongLongPress: (Song) -> Unit,
     onSongOverflow: (Song) -> Unit,
+    onOpenAlbums: () -> Unit,
+    onOpenArtists: () -> Unit,
+    onOpenRecordings: () -> Unit,
     onOpenSearch: () -> Unit,
     onOpenSettings: () -> Unit,
     onBrowseLibrary: () -> Unit,
@@ -190,6 +196,73 @@ fun HomeScreen(
                 }
             }
         }
+    }
+}
+
+/** Compact navigation cards for the collection browsers under the header. */
+@Composable
+private fun BrowseSection(
+    onOpenAlbums: () -> Unit,
+    onOpenArtists: () -> Unit,
+    onOpenRecordings: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 20.dp, vertical = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        BrowseCard(
+            icon = Icons.Rounded.Album,
+            label = stringResource(R.string.albums_title),
+            onClick = onOpenAlbums,
+            modifier = Modifier.weight(1f),
+        )
+        BrowseCard(
+            icon = Icons.Rounded.Person,
+            label = stringResource(R.string.artists_title),
+            onClick = onOpenArtists,
+            modifier = Modifier.weight(1f),
+        )
+        BrowseCard(
+            icon = Icons.Rounded.GraphicEq,
+            label = stringResource(R.string.recordings_title),
+            onClick = onOpenRecordings,
+            modifier = Modifier.weight(1f),
+        )
+    }
+}
+
+@Composable
+private fun BrowseCard(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier = modifier
+            .background(
+                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                shape = RoundedCornerShape(16.dp),
+            )
+            .combinedClickable(onClick = onClick)
+            .padding(horizontal = 8.dp, vertical = 12.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        Icon(
+            imageVector = icon,
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.primary,
+        )
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
     }
 }
 

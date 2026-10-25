@@ -29,9 +29,20 @@ object Routes {
     /** The built-in mini file manager: folders that contain songs. */
     const val FOLDERS = "folders"
 
+    /** The audio editor; the id is the song being edited. */
+    const val EDITOR = "editor/{songId}"
+    const val EDITOR_ID_ARG = "songId"
+
+    /** Collection browsers. */
+    const val ALBUMS = "albums"
+    const val ARTISTS = "artists"
+    const val RECORDINGS = "recordings"
+
     /** A playlist detail screen; the id is a path argument. */
     const val PLAYLIST_DETAIL = "playlist/{playlistId}"
     const val PLAYLIST_ID_ARG = "playlistId"
 
     fun playlistDetail(id: Long): String = "playlist/$id"
+
+    fun editor(id: Long): String = "editor/$id"
 }

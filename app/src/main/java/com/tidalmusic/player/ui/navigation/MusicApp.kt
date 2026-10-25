@@ -73,6 +73,9 @@ import com.tidalmusic.player.ui.components.SleepTimerDialog
 import com.tidalmusic.player.ui.components.SongActionSheet
 import com.tidalmusic.player.ui.components.SongDetailsDialog
 import com.tidalmusic.player.ui.components.TidalTextButton
+import com.tidalmusic.player.ui.collection.AlbumsScreen
+import com.tidalmusic.player.ui.collection.ArtistsScreen
+import com.tidalmusic.player.ui.collection.RecordingsScreen
 import com.tidalmusic.player.ui.folders.FoldersScreen
 import com.tidalmusic.player.ui.home.HomeScreen
 import com.tidalmusic.player.ui.library.LibraryScreen
@@ -506,6 +509,9 @@ fun MusicApp(
                     onViewModeChange = settingsVm::setViewModeHome,
                     onSongLongPress = songActionsVm::select,
                     onSongOverflow = songActionsVm::select,
+                    onOpenAlbums = { navController.navigate(Routes.ALBUMS) },
+                    onOpenArtists = { navController.navigate(Routes.ARTISTS) },
+                    onOpenRecordings = { navController.navigate(Routes.RECORDINGS) },
                     onPlayRecent = { song ->
                         val songs = libraryState.recentlyPlayed
                         val index = songs.indexOfFirst { it.id == song.id }
@@ -634,6 +640,60 @@ fun MusicApp(
                 )
             }
 
+            composable(Routes.ALBUMS) {
+                AlbumsScreen(
+                    songs = libraryState.allSongs.values.toList(),
+                    currentSongId = playbackState.currentSong?.id,
+                    isPlaying = playbackState.isPlaying,
+                    onBack = { navController.popBackStack() },
+                    onPlaySongs = { songs, index -> playerVm.playSongs(songs, index) },
+                    onSongOverflow = songActionsVm::select,
+                )
+            }
+
+            composable(Routes.ARTISTS) {
+                ArtistsScreen(
+                    songs = libraryState.allSongs.values.toList(),
+                    currentSongId = playbackState.currentSong?.id,
+                    isPlaying = playbackState.isPlaying,
+                    onBack = { navController.popBackStack() },
+                    onPlaySongs = { songs, index -> playerVm.playSongs(songs, index) },
+                    onSongOverflow = songActionsVm::select,
+                )
+            }
+
+            composable(Routes.RECORDINGS) {
+                RecordingsScreen(
+                    songs = libraryState.allSongs.values.toList(),
+                    currentSongId = playbackState.currentSong?.id,
+                    isPlaying = playbackState.isPlaying,
+                    onBack = { navController.popBackStack() },
+                    onPlaySongs = { songs, index -> playerVm.playSongs(songs, index) },
+                    onSongOverflow = songActionsVm::select,
+                )
+            }
+
+            composable(
+                route = Routes.EDITOR,
+                arguments = listOf(
+                    navArgument(Routes.EDITOR_ID_ARG) { type = NavType.LongType },
+                ),
+            ) { entry ->
+                val songId = entry.arguments?.getLong(Routes.EDITOR_ID_ARG) ?: 0L
+                val song = libraryState.allSongs[songId]
+                if (song == null) {
+                    LaunchedEffect(Unit) { navController.popBackStack() }
+                } else {
+                    val factory = remember(song) { factory.editorFactory(song, libraryState.allSongs.values.toList()) }
+                    val editorVm: com.tidalmusic.player.audioeditor.AudioEditorViewModel =
+                        androidx.lifecycle.viewmodel.compose.viewModel(factory = factory)
+                    com.tidalmusic.player.audioeditor.AudioEditorScreen(
+                        viewModel = editorVm,
+                        onBack = { navController.popBackStack() },
+                    )
+                }
+            }
+
             composable(Routes.PLAYER) {
                 val playerProgress by playerVm.progress.collectAsStateWithLifecycle()
                 val volume by playerVm.volume.collectAsStateWithLifecycle()
@@ -689,6 +749,24 @@ fun MusicApp(
                     onOpenSystemVolume = { openSystemVolume(context) },
                     batteryExempt = batteryExempt,
                     onRequestBatteryExemption = onRequestBatteryExemption,
+                    onAppLanguageChange = { language ->
+                        settingsVm.setAppLanguage(language)
+                        (context as? Activity)?.let { activity ->
+                            com.tidalmusic.player.util.AppLanguage.apply(
+                                activity,
+                                when (language) {
+                                    com.tidalmusic.player.data.preferences.AppLanguage.SYSTEM ->
+                                        com.tidalmusic.player.util.AppLanguage.Option.SYSTEM
+
+                                    com.tidalmusic.player.data.preferences.AppLanguage.ENGLISH ->
+                                        com.tidalmusic.player.util.AppLanguage.Option.ENGLISH
+
+                                    com.tidalmusic.player.data.preferences.AppLanguage.PERSIAN ->
+                                        com.tidalmusic.player.util.AppLanguage.Option.PERSIAN
+                                },
+                            )
+                        }
+                    },
                 )
             }
         }
@@ -805,6 +883,10 @@ fun MusicApp(
             onEditMetadata = {
                 songActionsVm.clearSelection()
                 showEditMetadata = true
+            },
+            onEditAudio = {
+                songActionsVm.clearSelection()
+                navController.navigate(Routes.editor(song.id))
             },
             onShare = {
                 songActionsVm.clearSelection()

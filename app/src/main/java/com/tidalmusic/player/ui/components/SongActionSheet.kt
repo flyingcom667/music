@@ -14,6 +14,7 @@ import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Favorite
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.ContentCut
 import androidx.compose.material.icons.rounded.PlayArrow
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.VisibilityOff
@@ -56,6 +57,7 @@ fun SongActionSheet(
     onToggleFavorite: () -> Unit,
     onDetails: () -> Unit,
     onEditMetadata: () -> Unit,
+    onEditAudio: () -> Unit,
     onShare: () -> Unit,
     onHide: () -> Unit,
     onDelete: () -> Unit,
@@ -146,6 +148,11 @@ fun SongActionSheet(
                 icon = { Icon(Icons.Rounded.Edit, null) },
                 label = stringResource(R.string.action_edit_metadata),
                 onClick = onEditMetadata,
+            )
+            ActionRow(
+                icon = { Icon(Icons.Rounded.ContentCut, null) },
+                label = stringResource(R.string.action_edit_audio),
+                onClick = onEditAudio,
             )
             ActionRow(
                 icon = { Icon(Icons.Rounded.Share, null) },

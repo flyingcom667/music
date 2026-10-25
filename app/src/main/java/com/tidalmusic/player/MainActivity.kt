@@ -44,6 +44,10 @@ import kotlinx.coroutines.withContext
  */
 class MainActivity : ComponentActivity() {
 
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(com.tidalmusic.player.util.AppLanguage.wrap(newBase))
+    }
+
     private val container: AppContainer
         get() = (application as TidalMusicApp).container
 

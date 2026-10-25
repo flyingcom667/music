@@ -40,6 +40,17 @@ enum class ListDensity(val key: String) {
     }
 }
 
+/** The in-app display language. */
+enum class AppLanguage(val key: String) {
+    SYSTEM("system"),
+    ENGLISH("en"),
+    PERSIAN("fa");
+
+    companion object {
+        fun fromKey(key: String?): AppLanguage = entries.firstOrNull { it.key == key } ?: SYSTEM
+    }
+}
+
 /**
  * How a screen lays out its songs: a detailed row list or a cover grid.
  *
@@ -74,6 +85,7 @@ class AppPreferences(private val context: Context) : SettingsStore {
         val SHOW_ARTWORK = booleanPreferencesKey("show_artwork")
         val DEFAULT_SORT_ORDER = stringPreferencesKey("default_sort_order")
         val DEFAULT_SORT_DIRECTION = stringPreferencesKey("default_sort_direction")
+        val APP_LANGUAGE = stringPreferencesKey("app_language")
         val VIEW_MODE_LIBRARY = stringPreferencesKey("view_mode_library")
         val VIEW_MODE_HOME = stringPreferencesKey("view_mode_home")
         val VIEW_MODE_FOLDERS = stringPreferencesKey("view_mode_folders")
@@ -93,6 +105,7 @@ class AppPreferences(private val context: Context) : SettingsStore {
         val showArtwork: Boolean = true,
         val defaultSortOrder: SortOrder = SortOrder.TITLE,
         val defaultSortDirection: SortDirection = SortDirection.ASCENDING,
+        val appLanguage: AppLanguage = AppLanguage.SYSTEM,
         val viewModeLibrary: ViewMode = ViewMode.LIST,
         val viewModeHome: ViewMode = ViewMode.LIST,
         val viewModeFolders: ViewMode = ViewMode.LIST,
@@ -117,6 +130,7 @@ class AppPreferences(private val context: Context) : SettingsStore {
                 showArtwork = prefs[Keys.SHOW_ARTWORK] ?: true,
                 defaultSortOrder = SortOrder.fromKey(prefs[Keys.DEFAULT_SORT_ORDER]),
                 defaultSortDirection = SortDirection.fromKey(prefs[Keys.DEFAULT_SORT_DIRECTION]),
+                appLanguage = AppLanguage.fromKey(prefs[Keys.APP_LANGUAGE]),
                 viewModeLibrary = ViewMode.fromKey(prefs[Keys.VIEW_MODE_LIBRARY]),
                 viewModeHome = ViewMode.fromKey(prefs[Keys.VIEW_MODE_HOME]),
                 viewModeFolders = ViewMode.fromKey(prefs[Keys.VIEW_MODE_FOLDERS]),
@@ -147,6 +161,8 @@ class AppPreferences(private val context: Context) : SettingsStore {
         it[Keys.DEFAULT_SORT_ORDER] = order.key
         it[Keys.DEFAULT_SORT_DIRECTION] = direction.key
     }
+
+    override suspend fun setAppLanguage(language: AppLanguage) = edit { it[Keys.APP_LANGUAGE] = language.key }
 
     override suspend fun setViewModeLibrary(mode: ViewMode) = edit { it[Keys.VIEW_MODE_LIBRARY] = mode.key }
 

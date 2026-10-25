@@ -70,6 +70,7 @@ class MediaStoreScanner(private val context: Context) {
             } else {
                 add(MediaStore.Audio.Media.DATA)
             }
+            add(MediaStore.Audio.Media.IS_MUSIC)
         }.toTypedArray()
 
         val songs = mutableListOf<Song>()
@@ -134,6 +135,7 @@ class MediaStoreScanner(private val context: Context) {
                         mimeType = mimeCol.takeIf { it >= 0 }?.let { cursor.getString(it) },
                         albumId = cursor.getLong(albumIdCol),
                         relativePath = relativePath,
+                        isMusic = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.IS_MUSIC)) != 0,
                     )
                     loaded++
                     if (loaded % BATCH_SIZE == 0) {
