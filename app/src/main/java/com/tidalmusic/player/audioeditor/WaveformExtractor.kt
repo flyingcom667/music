@@ -158,17 +158,3 @@ object WaveformExtractor {
         }
     }
 }
-
-
-/**
- * Per-track waveform cache shared by the editor and the Now Playing visualizer, so a
- * track is decoded for its amplitude envelope at most once per process.
- */
-object WaveformCache {
-    private val cache = java.util.concurrent.ConcurrentHashMap<Long, IntArray>()
-
-    fun get(songId: Long): IntArray? = cache[songId]
-
-    suspend fun extract(context: Context, song: Song): IntArray =
-        cache[song.id] ?: WaveformExtractor.extract(context, song).also { cache[song.id] = it }
-}
