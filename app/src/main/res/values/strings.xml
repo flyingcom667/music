@@ -352,4 +352,10 @@
     <string name="folder_info_path">Path</string>
     <string name="folder_info_count">Songs</string>
     <string name="folder_info_size">Size</string>
+    <string name="settings_battery_title">Battery optimization</string>
+    <string name="settings_battery_summary_on">Unrestricted — background playback is reliable</string>
+    <string name="settings_battery_summary_off">Tap to allow uninterrupted background playback</string>
+    <string name="bt_device_fallback">Bluetooth device</string>
+    <string name="bt_battery_level">%1$d%% battery</string>
+    <string name="bt_battery_lr">L %1$d%% · R %2$d%%</string>
 </resources>

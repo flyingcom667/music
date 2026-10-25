@@ -13,7 +13,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.Refresh
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -40,6 +39,7 @@ import com.tidalmusic.player.data.preferences.AppPreferences
 import com.tidalmusic.player.data.preferences.ListDensity
 import com.tidalmusic.player.data.preferences.ThemeMode
 import com.tidalmusic.player.domain.model.SortOrder
+import com.tidalmusic.player.ui.components.TidalAlertDialog
 import com.tidalmusic.player.ui.components.SectionHeader
 import com.tidalmusic.player.ui.components.TidalTextButton
 import com.tidalmusic.player.ui.viewmodel.StorageInfo
@@ -73,6 +73,8 @@ fun SettingsScreen(
     onRequestPermission: () -> Unit,
     onOpenAppSettings: () -> Unit,
     onOpenSystemVolume: () -> Unit,
+    batteryExempt: Boolean,
+    onRequestBatteryExemption: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     var themeDialog by remember { mutableStateOf(false) }
@@ -229,6 +231,19 @@ fun SettingsScreen(
                     title = stringResource(R.string.settings_volume),
                     summary = stringResource(R.string.settings_system_volume_summary),
                     onClick = onOpenSystemVolume,
+                )
+            }
+            item(key = "battery") {
+                SettingsRow(
+                    title = stringResource(R.string.settings_battery_title),
+                    summary = stringResource(
+                        if (batteryExempt) {
+                            R.string.settings_battery_summary_on
+                        } else {
+                            R.string.settings_battery_summary_off
+                        },
+                    ),
+                    onClick = { if (!batteryExempt) onRequestBatteryExemption() },
                 )
             }
             item(key = "storage-header") {
@@ -435,7 +450,7 @@ private fun <T> ChoiceDialog(
     onSelect: (T) -> Unit,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    TidalAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(title) },
         text = {

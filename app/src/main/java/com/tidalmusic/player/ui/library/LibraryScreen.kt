@@ -39,7 +39,6 @@ import androidx.compose.material.icons.rounded.SelectAll
 import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material.icons.rounded.Share
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -84,6 +83,7 @@ import com.tidalmusic.player.domain.model.Song
 import com.tidalmusic.player.domain.model.SortDirection
 import com.tidalmusic.player.domain.model.SortOrder
 import com.tidalmusic.player.domain.model.SortSpec
+import com.tidalmusic.player.ui.components.TidalAlertDialog
 import com.tidalmusic.player.ui.components.DeterminateLoadingState
 import com.tidalmusic.player.ui.components.EmptyState
 import com.tidalmusic.player.ui.components.ErrorState
@@ -607,7 +607,7 @@ fun LibraryScreen(
     }
 
     if (confirmDelete) {
-        AlertDialog(
+        TidalAlertDialog(
             onDismissRequest = { confirmDelete = false },
             title = { Text(stringResource(R.string.library_delete_selected_title)) },
             text = {
@@ -700,7 +700,7 @@ fun SortDialog(
     var order by remember(current) { mutableStateOf(current.order) }
     var direction by remember(current) { mutableStateOf(current.direction) }
 
-    AlertDialog(
+    TidalAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.library_sort_title)) },
         text = {

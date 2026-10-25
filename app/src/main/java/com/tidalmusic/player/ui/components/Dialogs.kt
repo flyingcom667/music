@@ -13,7 +13,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Info
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -49,7 +48,7 @@ fun PlaylistPickerDialog(
     var showCreate by remember { mutableStateOf(false) }
 
     if (showCreate) {
-        AlertDialog(
+        TidalAlertDialog(
             onDismissRequest = { showCreate = false },
             title = { Text(stringResource(R.string.playlist_create_title)) },
             text = {
@@ -81,7 +80,7 @@ fun PlaylistPickerDialog(
         return
     }
 
-    AlertDialog(
+    TidalAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.action_add_to_playlist)) },
         text = {
@@ -140,7 +139,7 @@ fun SongDetailsDialog(
     genre: String?,
     onDismiss: () -> Unit,
 ) {
-    AlertDialog(
+    TidalAlertDialog(
         onDismissRequest = onDismiss,
         icon = {
             Icon(
@@ -220,7 +219,7 @@ fun EditMetadataDialog(
     var album by remember { mutableStateOf(song.album) }
     var genre by remember { mutableStateOf(song.genre.orEmpty()) }
 
-    AlertDialog(
+    TidalAlertDialog(
         onDismissRequest = { if (!isSaving) onDismiss() },
         title = { Text(stringResource(R.string.metadata_edit_title)) },
         text = {
@@ -286,7 +285,7 @@ fun SleepTimerDialog(
 ) {
     val options = listOf(5, 10, 15, 30, 45, 60)
 
-    AlertDialog(
+    TidalAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.sleep_timer_title)) },
         text = {

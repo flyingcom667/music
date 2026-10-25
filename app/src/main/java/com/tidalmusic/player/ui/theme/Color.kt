@@ -38,16 +38,19 @@ private val LightOnSurfaceVariant = Color(0xFF33627D)
 private val LightOutline = Color(0xFF6D9DB4)
 private val LightOutlineVariant = Color(0xFFB4E3F0)
 
+// Dark theme: a stepped ocean ramp that stays clearly blue instead of collapsing into
+// flat grey-black. Each step is one lift lighter than the background so cards, sheets
+// and dialogs read as separate layers.
 private val DarkBackground = Color(0xFF03045E)
 private val DarkOnBackground = Color(0xFFDCF4FC)
-private val DarkSurfaceContainerLowest = Color(0xFF020212)
-private val DarkSurfaceContainerLow = Color(0xFF040837)
-private val DarkSurfaceContainer = Color(0xFF060B45)
-private val DarkSurfaceContainerHigh = Color(0xFF0D1A60)
-private val DarkSurfaceContainerHighest = Color(0xFF162674)
-private val DarkOnSurfaceVariant = Color(0xFF9CCADB)
-private val DarkOutline = Color(0xFF638FA3)
-private val DarkOutlineVariant = Color(0xFF1E4B66)
+private val DarkSurfaceContainerLowest = Color(0xFF02031C)
+private val DarkSurfaceContainerLow = Color(0xFF071157)
+private val DarkSurfaceContainer = Color(0xFF0A1A6E)
+private val DarkSurfaceContainerHigh = Color(0xFF122480)
+private val DarkSurfaceContainerHighest = Color(0xFF1B2F96)
+private val DarkOnSurfaceVariant = Color(0xFFA5D4E6)
+private val DarkOutline = Color(0xFF6FA3C9)
+private val DarkOutlineVariant = Color(0xFF274F87)
 
 
 // ---------------------------------------------------------------------------------------

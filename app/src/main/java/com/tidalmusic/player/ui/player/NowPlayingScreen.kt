@@ -21,6 +21,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.VolumeOff
+import androidx.compose.material.icons.rounded.Bluetooth
 import androidx.compose.material.icons.automirrored.rounded.VolumeUp
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.Close
@@ -53,7 +54,24 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import android.Manifest
+import android.content.pm.PackageManager
+import android.media.AudioDeviceCallback
+import android.media.AudioDeviceInfo
+import android.media.AudioManager
+import android.os.Build
+import android.os.Handler
+import android.os.Looper
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.core.content.ContextCompat
+import androidx.compose.ui.platform.LocalContext
 import com.tidalmusic.player.R
+import com.tidalmusic.player.util.BluetoothDeviceInfo
+import com.tidalmusic.player.util.connectedBluetoothDevices
 import com.tidalmusic.player.domain.model.PlaybackProgress
 import com.tidalmusic.player.domain.model.PlaybackState
 import com.tidalmusic.player.domain.model.Song
@@ -426,6 +444,53 @@ private fun VolumeAdjustmentSheet(
                     color = MaterialTheme.colorScheme.error,
                 )
             }
+
+            // Connected Bluetooth audio devices: name always, battery when the headset
+            // reports it (whole-device or per-bud); unsupported devices show name only.
+            rememberBluetoothDeviceInfos().forEach { device ->
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Bluetooth,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = device.name.ifBlank {
+                                stringResource(R.string.bt_device_fallback)
+                            },
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                        val batteryText = when {
+                            device.leftBatteryPercent != null && device.rightBatteryPercent != null ->
+                                stringResource(
+                                    R.string.bt_battery_lr,
+                                    device.leftBatteryPercent,
+                                    device.rightBatteryPercent,
+                                )
+
+                            device.batteryPercent != null ->
+                                stringResource(R.string.bt_battery_level, device.batteryPercent)
+
+                            else -> null
+                        }
+                        if (batteryText != null) {
+                            Text(
+                                text = batteryText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+            }
         }
 
     }
@@ -461,6 +526,51 @@ private fun Artwork(song: Song, size: Dp, animate: Boolean) {
             contentDescription = stringResource(R.string.player_artwork_description, song.title),
         )
     }
+}
+
+/**
+ * The connected Bluetooth audio outputs, refreshed while the sheet is open: the list
+ * recomputes when a device connects or disconnects, and the first open requests
+ * BLUETOOTH_CONNECT so battery figures can be read on Android 13+.
+ */
+@Composable
+private fun rememberBluetoothDeviceInfos(): List<BluetoothDeviceInfo> {
+    val context = LocalContext.current
+    var canAccess by remember {
+        mutableStateOf(
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.S ||
+                ContextCompat.checkSelfPermission(
+                    context,
+                    Manifest.permission.BLUETOOTH_CONNECT,
+                ) == PackageManager.PERMISSION_GRANTED,
+        )
+    }
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission(),
+    ) { granted -> canAccess = granted }
+    LaunchedEffect(Unit) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !canAccess) {
+            launcher.launch(Manifest.permission.BLUETOOTH_CONNECT)
+        }
+    }
+    var refreshTick by remember { mutableIntStateOf(0) }
+    DisposableEffect(context) {
+        val audioManager = context.getSystemService(AudioManager::class.java)
+        val callback = object : AudioDeviceCallback() {
+            override fun onAudioDevicesAdded(addedDevices: Array<out AudioDeviceInfo>) {
+                refreshTick++
+            }
+
+            override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
+                refreshTick++
+            }
+        }
+        audioManager?.registerAudioDeviceCallback(callback, Handler(Looper.getMainLooper()))
+        onDispose {
+            audioManager?.unregisterAudioDeviceCallback(callback)
+        }
+    }
+    return remember(canAccess, refreshTick) { connectedBluetoothDevices(context, canAccess) }
 }
 
 @Composable

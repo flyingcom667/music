@@ -347,4 +347,10 @@
     <string name="folder_info_path">المسار</string>
     <string name="folder_info_count">المقاطع</string>
     <string name="folder_info_size">الحجم</string>
+    <string name="settings_battery_title">تحسين البطارية</string>
+    <string name="settings_battery_summary_on">بدون قيود — يعمل التشغيل في الخلفية بشكل موثوق</string>
+    <string name="settings_battery_summary_off">اضغط للسماح بالتشغيل المتواصل في الخلفية</string>
+    <string name="bt_device_fallback">جهاز بلوتوث</string>
+    <string name="bt_battery_level">البطارية %1$d%%</string>
+    <string name="bt_battery_lr">يسار %1$d%% · يمين %2$d%%</string>
 </resources>

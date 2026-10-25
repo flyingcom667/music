@@ -20,4 +20,10 @@
         <item name="android:backgroundDimAmount">0.28</item>
         <item name="android:backgroundDimEnabled">true</item>
     </style>
+
+    <!-- Pop animation shared by every app dialog (see TidalAlertDialog). -->
+    <style name="TidalDialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/dialog_pop_in</item>
+        <item name="android:windowExitAnimation">@anim/dialog_pop_out</item>
+    </style>
 </resources>

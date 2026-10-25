@@ -32,7 +32,6 @@ import androidx.compose.material.icons.rounded.RadioButtonUnchecked
 import androidx.compose.material.icons.rounded.RemoveCircleOutline
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.rounded.ViewList
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -59,6 +58,7 @@ import androidx.compose.ui.unit.dp
 import com.tidalmusic.player.R
 import com.tidalmusic.player.data.preferences.ViewMode
 import com.tidalmusic.player.domain.model.Song
+import com.tidalmusic.player.ui.components.TidalAlertDialog
 import com.tidalmusic.player.ui.components.EmptyState
 import com.tidalmusic.player.ui.components.SongRow
 import com.tidalmusic.player.ui.components.TidalTextButton
@@ -305,7 +305,7 @@ fun FoldersScreen(
     }
 
     infoFolder?.let { folder ->
-        AlertDialog(
+        TidalAlertDialog(
             onDismissRequest = { infoFolder = null },
             icon = {
                 Icon(

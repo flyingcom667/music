@@ -347,4 +347,10 @@
     <string name="folder_info_path">مسیر</string>
     <string name="folder_info_count">آهنگ‌ها</string>
     <string name="folder_info_size">حجم</string>
+    <string name="settings_battery_title">بهینه‌سازی باتری</string>
+    <string name="settings_battery_summary_on">بدون محدودیت — پخش در پس‌زمینه پایدار است</string>
+    <string name="settings_battery_summary_off">برای پخش پیوسته در پس‌زمینه، ضربه بزنید</string>
+    <string name="bt_device_fallback">دستگاه بلوتوث</string>
+    <string name="bt_battery_level">باتری %1$d%%</string>
+    <string name="bt_battery_lr">چپ %1$d%% · راست %2$d%%</string>
 </resources>

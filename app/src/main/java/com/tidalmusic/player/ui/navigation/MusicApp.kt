@@ -21,6 +21,8 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.animation.AnimatedVisibility
@@ -30,7 +32,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.Icon
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
@@ -63,6 +64,7 @@ import androidx.navigation.navArgument
 import com.tidalmusic.player.R
 import com.tidalmusic.player.data.repository.PlaylistSummary
 import com.tidalmusic.player.domain.model.Song
+import com.tidalmusic.player.ui.components.TidalAlertDialog
 import com.tidalmusic.player.ui.components.EditMetadataDialog
 import com.tidalmusic.player.ui.components.ExternalPlaybackDialog
 import com.tidalmusic.player.ui.components.MiniPlayer
@@ -114,6 +116,8 @@ fun MusicApp(
     hasPermission: Boolean,
     onRequestPermission: () -> Unit,
     onOpenAppSettings: () -> Unit,
+    batteryExempt: Boolean,
+    onRequestBatteryExemption: () -> Unit,
     externalSong: Song?,
     onExternalSongHandled: () -> Unit,
     externalAudioUnavailable: Boolean,
@@ -453,10 +457,25 @@ fun MusicApp(
                 }
             },
             exitTransition = {
-                fadeOut(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
+                if (targetState.destination.route == Routes.PLAYER) {
+                    // The screen under Now Playing shrinks back slightly — layered-sheet look.
+                    scaleOut(
+                        targetScale = 0.96f,
+                        animationSpec = tween(MotionTokens.PlayerTransitionMs),
+                    ) + fadeOut(animationSpec = tween(MotionTokens.PlayerTransitionMs))
+                } else {
+                    fadeOut(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
+                }
             },
             popEnterTransition = {
-                fadeIn(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
+                if (initialState.destination.route == Routes.PLAYER) {
+                    scaleIn(
+                        initialScale = 0.96f,
+                        animationSpec = tween(MotionTokens.PlayerTransitionMs),
+                    ) + fadeIn(animationSpec = tween(MotionTokens.PlayerTransitionMs))
+                } else {
+                    fadeIn(animationSpec = tween(MotionTokens.TopLevelTransitionMs))
+                }
             },
             popExitTransition = {
                 if (initialState.destination.route == Routes.PLAYER) {
@@ -668,6 +687,8 @@ fun MusicApp(
                     onRequestPermission = onRequestPermission,
                     onOpenAppSettings = onOpenAppSettings,
                     onOpenSystemVolume = { openSystemVolume(context) },
+                    batteryExempt = batteryExempt,
+                    onRequestBatteryExemption = onRequestBatteryExemption,
                 )
             }
         }
@@ -801,7 +822,7 @@ fun MusicApp(
     }
 
     deleteSongConfirmation?.let { song ->
-        AlertDialog(
+        TidalAlertDialog(
             onDismissRequest = { deleteSongConfirmation = null },
             title = { Text(context.getString(R.string.delete_file_title, song.title)) },
             text = {
@@ -926,7 +947,7 @@ fun MusicApp(
     }
 
     shareEmptyPlaylist?.let { playlist ->
-        AlertDialog(
+        TidalAlertDialog(
             onDismissRequest = { shareEmptyPlaylist = null },
             title = { Text(stringResource(R.string.playlist_share_empty_title)) },
             text = { Text(stringResource(R.string.playlist_share_empty_body, playlist.name)) },
@@ -979,7 +1000,7 @@ fun MusicApp(
     }
 
     if (externalAudioUnavailable) {
-        AlertDialog(
+        TidalAlertDialog(
             onDismissRequest = onExternalAudioErrorHandled,
             title = { Text(stringResource(R.string.external_audio_title)) },
             text = { Text(stringResource(R.string.external_audio_unavailable)) },
@@ -992,7 +1013,7 @@ fun MusicApp(
     }
 
     if (showAudioRouteWarning) {
-        AlertDialog(
+        TidalAlertDialog(
             onDismissRequest = { showAudioRouteWarning = false },
             icon = {
                 Icon(

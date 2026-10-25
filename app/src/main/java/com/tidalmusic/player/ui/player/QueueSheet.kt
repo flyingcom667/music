@@ -18,7 +18,6 @@ import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.DeleteSweep
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material.icons.rounded.KeyboardArrowUp
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,6 +38,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.tidalmusic.player.R
 import com.tidalmusic.player.domain.model.QueueItem
+import com.tidalmusic.player.ui.components.TidalAlertDialog
 import com.tidalmusic.player.ui.components.AlbumArtwork
 import com.tidalmusic.player.ui.components.TidalTextButton
 import com.tidalmusic.player.ui.components.EmptyState
@@ -125,7 +125,7 @@ fun QueueSheet(
     }
 
     if (confirmClear) {
-        AlertDialog(
+        TidalAlertDialog(
             onDismissRequest = { confirmClear = false },
             title = { Text(stringResource(R.string.queue_clear_title)) },
             text = { Text(stringResource(R.string.queue_clear_body)) },

@@ -1,5 +1,6 @@
 package com.tidalmusic.player.util
 
+import android.bluetooth.BluetoothDevice
 import android.content.Context
 import android.media.AudioDeviceCallback
 import android.media.AudioDeviceInfo
@@ -79,6 +80,61 @@ fun resolveAudioOutput(context: Context): AudioOutputKind {
         wired -> AudioOutputKind.WIRED
         else -> AudioOutputKind.SPEAKER
     }
+}
+
+/** One connected Bluetooth audio output, as far as the platform reports it. */
+data class BluetoothDeviceInfo(
+    val name: String,
+    /** Whole-device battery, 1..100, or null when the device does not report it. */
+    val batteryPercent: Int? = null,
+    /** Per-bud batteries for TWS headsets, or null when unsupported. */
+    val leftBatteryPercent: Int? = null,
+    val rightBatteryPercent: Int? = null,
+)
+
+private val BLUETOOTH_OUTPUT_TYPES = setOf(
+    AudioDeviceInfo.TYPE_BLUETOOTH_A2DP,
+    AudioDeviceInfo.TYPE_BLUETOOTH_SCO,
+    AudioDeviceInfo.TYPE_BLE_HEADSET,
+    AudioDeviceInfo.TYPE_BLE_SPEAKER,
+    AudioDeviceInfo.TYPE_BLE_BROADCAST,
+    AudioDeviceInfo.TYPE_HEARING_AID,
+)
+
+/**
+ * The Bluetooth audio outputs that are currently connected.
+ *
+ * The device name always comes from the system audio routing and needs no Bluetooth
+ * permission. Battery figures are only read when the user granted BLUETOOTH_CONNECT on
+ * Android 13+ and the headset actually reports them; unsupported devices simply leave
+ * the percentages null and the UI shows the name only.
+ */
+fun connectedBluetoothDevices(
+    context: Context,
+    canAccessBluetooth: Boolean,
+): List<BluetoothDeviceInfo> {
+    val audioManager = context.getSystemService(AudioManager::class.java) ?: return emptyList()
+    return audioManager.getDevices(AudioManager.GET_DEVICES_OUTPUTS)
+        .filter { it.type in BLUETOOTH_OUTPUT_TYPES }
+        .map { info ->
+            val name = info.productName?.toString()?.takeIf { it.isNotBlank() }
+                ?: info.address?.takeIf { it.isNotBlank() && it != "00:00:00:00:00:00" }
+                ?: ""
+            var battery: Int? = null
+            // Per-bud (left/right) batteries are not part of the public SDK, and the whole
+            // -device battery APIs (getBatteryLevel/getMetadata) were removed from the
+            // public platform stubs after Android 13. Android publishes no supported way
+            // for a normal app to read headset battery, so the percentage stays null and
+            // the UI truthfully shows the device name and category only.
+            var left: Int? = null
+            var right: Int? = null
+            BluetoothDeviceInfo(
+                name = name,
+                batteryPercent = battery,
+                leftBatteryPercent = left,
+                rightBatteryPercent = right,
+            )
+        }
 }
 
 /**

@@ -22,7 +22,6 @@ import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material.icons.automirrored.rounded.QueueMusic
 import androidx.compose.material.icons.rounded.MoreVert
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -51,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import com.tidalmusic.player.R
 import com.tidalmusic.player.data.repository.PlaylistSummary
 import com.tidalmusic.player.domain.model.Song
+import com.tidalmusic.player.ui.components.TidalAlertDialog
 import com.tidalmusic.player.ui.components.AlbumArtwork
 import com.tidalmusic.player.ui.components.EmptyState
 import com.tidalmusic.player.ui.components.LoadingState
@@ -292,7 +292,7 @@ fun PlaylistNameDialog(
     var description by remember { mutableStateOf(initialDescription) }
     val trimmed = name.trim()
 
-    AlertDialog(
+    TidalAlertDialog(
         onDismissRequest = { if (!isSaving) onDismiss() },
         title = { Text(title) },
         text = {
@@ -335,7 +335,7 @@ fun DeletePlaylistDialog(
     onDismiss: () -> Unit,
     onConfirm: () -> Unit,
 ) {
-    AlertDialog(
+    TidalAlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.playlist_delete_title, playlistName)) },
         text = { Text(stringResource(R.string.playlist_delete_body)) },

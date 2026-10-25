@@ -41,8 +41,13 @@ jobs:
           java-version: "21"
           cache: gradle
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+      # The ubuntu-latest image already ships the Android SDK with licenses accepted;
+      # android-actions/setup-android@v3 is skipped on purpose: it runs `sdkmanager tools`,
+      # a package Google removed from the repository, and fails the job.
+      - name: Accept Android SDK licenses
+        run: yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+        env:
+          ANDROID_HOME: /usr/local/lib/android/sdk
 
       - name: Restore release signing
         env:

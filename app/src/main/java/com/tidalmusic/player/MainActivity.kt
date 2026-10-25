@@ -54,6 +54,9 @@ class MainActivity : ComponentActivity() {
     /** Guards against a stale async resolution overwriting a newer "open with" request. */
     private var externalResolveGeneration = 0
 
+    /** True while the system exempts the app from battery optimization (live in the UI). */
+    private var batteryExempt by mutableStateOf(false)
+
     /**
      * Resolved once per Activity. Reading it from a composable would otherwise perform a
      * `PackageManager` call on the main thread on every recomposition of the app shell.
@@ -111,6 +114,7 @@ class MainActivity : ComponentActivity() {
                 } else {
                     requestBatteryOptimizationExemptionIfNeeded()
                 }
+                batteryExempt = isIgnoringBatteryOptimizations()
             }
 
             TidalMusicTheme(
@@ -124,6 +128,10 @@ class MainActivity : ComponentActivity() {
                         permissionLauncher.launch(MediaPermissions.audioPermissions)
                     },
                     onOpenAppSettings = { openAppSettings() },
+                    batteryExempt = batteryExempt,
+                    onRequestBatteryExemption = {
+                        requestBatteryOptimizationExemptionIfNeeded(force = true)
+                    },
                     externalSong = externalSong,
                     onExternalSongHandled = { externalSong = null },
                     externalAudioUnavailable = externalAudioUnavailable,
@@ -138,6 +146,8 @@ class MainActivity : ComponentActivity() {
         super.onResume()
         // The user may have granted or revoked access in the system settings.
         hasAudioPermission = MediaPermissions.hasAudioAccess(this)
+        // ...or granted the battery exemption through the request dialog.
+        batteryExempt = isIgnoringBatteryOptimizations()
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -173,14 +183,25 @@ class MainActivity : ComponentActivity() {
         startActivity(MediaPermissions.appSettingsIntent(this))
     }
 
-    private fun requestBatteryOptimizationExemptionIfNeeded() {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || !hasAudioPermission) return
-        val powerManager = getSystemService(PowerManager::class.java)
-        if (powerManager.isIgnoringBatteryOptimizations(packageName)) return
+    private fun isIgnoringBatteryOptimizations(): Boolean {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return true
+        return getSystemService(PowerManager::class.java)
+            ?.isIgnoringBatteryOptimizations(packageName) == true
+    }
 
-        val preferences = getSharedPreferences(PROMPT_PREFS, MODE_PRIVATE)
-        if (preferences.getBoolean(BATTERY_REQUEST_SHOWN, false)) return
-        preferences.edit().putBoolean(BATTERY_REQUEST_SHOWN, true).apply()
+    /**
+     * @param force when false the dialog is shown at most once per install (the automatic
+     *   first-run prompt); when true it is always shown if not yet exempt (the Settings row).
+     */
+    private fun requestBatteryOptimizationExemptionIfNeeded(force: Boolean = false) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M || !hasAudioPermission) return
+        if (isIgnoringBatteryOptimizations()) return
+
+        if (!force) {
+            val preferences = getSharedPreferences(PROMPT_PREFS, MODE_PRIVATE)
+            if (preferences.getBoolean(BATTERY_REQUEST_SHOWN, false)) return
+            preferences.edit().putBoolean(BATTERY_REQUEST_SHOWN, true).apply()
+        }
 
         val request = Intent(
             Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
